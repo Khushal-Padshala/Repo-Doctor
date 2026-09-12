@@ -241,18 +241,6 @@ export const RepositorySelectionPage: React.FC<RepositorySelectionPageProps> = (
                 </div>
               )}
 
-              {/* Primary Action Button */}
-              <div className="pt-2">
-                <button
-                  id="primary-analyze-repository-button"
-                  type="submit"
-                  disabled={!isValid || isAnalyzing}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#F3E9EC] px-8 py-4 font-urbanist text-sm font-bold uppercase tracking-wider text-[#00030E] shadow-xl hover:bg-[#B47A9A] transition duration-150 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-[#F3E9EC]"
-                >
-                  <span>{isAnalyzing ? 'Analyzing...' : 'Analyze Repository'}</span>
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
             </form>
 
             {/* Public Repositories Supported & Format hints */}
