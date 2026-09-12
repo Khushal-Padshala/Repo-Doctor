@@ -179,22 +179,40 @@ export default function App() {
 
   // Create Pull Request clicked from Treatment page
   const handleCreatePullRequest = (issue: Issue) => {
-    if (!repository) return;
     setIsCreatingPR(true);
 
     setTimeout(() => {
       setIsCreatingPR(false);
 
-      const scoreBefore = repository.scores.overall;
-      const gradeBefore = repository.scores.letterGrade;
-      const newScore = Math.min(100, scoreBefore + issue.scoreImpact.overall);
+      const currentRepo = repository || {
+        id: 'repo-demo',
+        owner: 'developer',
+        name: 'repository',
+        fullName: 'developer/repository',
+        url: 'https://github.com/developer/repository',
+        stars: 120,
+        forks: 34,
+        branch: 'main',
+        defaultBranch: 'main',
+        lastScanned: 'Just now',
+        commitHash: '8f92a1c',
+        language: 'TypeScript',
+        scores: { overall: 70, letterGrade: 'B', gradeDescription: 'Good with Minor Risks', security: 65, quality: 75, hygiene: 80, docs: 70, cicd: 60 },
+        issues: [issue],
+        healthHistory: []
+      };
+
+      const scoreBefore = currentRepo.scores?.overall ?? 70;
+      const gradeBefore = currentRepo.scores?.letterGrade ?? 'B';
+      const overallImpact = issue.scoreImpact?.overall ?? 12;
+      const newScore = Math.min(100, scoreBefore + overallImpact);
       const gradeAfterInfo = calculateGrade(newScore);
 
       const prDetails: PullRequestDetails = {
         prNumber: issue.prNumber || Math.floor(100 + Math.random() * 900),
-        title: issue.prTitle,
-        branchName: issue.targetBranch,
-        baseBranch: repository.defaultBranch,
+        title: issue.prTitle || `fix: ${issue.title}`,
+        branchName: issue.targetBranch || `repo-doctor/remediation-patch-${issue.id || '1'}`,
+        baseBranch: currentRepo.defaultBranch || 'main',
         author: 'repo-doctor[bot]',
         createdAt: 'Just now',
         scoreBefore,
@@ -206,27 +224,28 @@ export default function App() {
       };
 
       // Mark the issue as resolved and update scores in repository state
-      const updatedIssues = repository.issues.map((i) =>
+      const repoIssues = currentRepo.issues || [issue];
+      const updatedIssues = repoIssues.map((i) =>
         i.id === issue.id ? { ...i, isResolved: true } : i
       );
 
       const updatedScores = {
-        ...repository.scores,
+        ...(currentRepo.scores || {}),
         overall: newScore,
         letterGrade: gradeAfterInfo.grade,
         gradeDescription: gradeAfterInfo.desc,
-        security: Math.min(100, repository.scores.security + issue.scoreImpact.security),
-        quality: Math.min(100, repository.scores.quality + issue.scoreImpact.quality),
-        hygiene: Math.min(100, repository.scores.hygiene + issue.scoreImpact.hygiene),
-        docs: Math.min(100, repository.scores.docs + issue.scoreImpact.docs),
-        cicd: Math.min(100, repository.scores.cicd + issue.scoreImpact.cicd),
+        security: Math.min(100, (currentRepo.scores?.security ?? 70) + (issue.scoreImpact?.security ?? 0)),
+        quality: Math.min(100, (currentRepo.scores?.quality ?? 70) + (issue.scoreImpact?.quality ?? 0)),
+        hygiene: Math.min(100, (currentRepo.scores?.hygiene ?? 70) + (issue.scoreImpact?.hygiene ?? 0)),
+        docs: Math.min(100, (currentRepo.scores?.docs ?? 70) + (issue.scoreImpact?.docs ?? 0)),
+        cicd: Math.min(100, (currentRepo.scores?.cicd ?? 70) + (issue.scoreImpact?.cicd ?? 0)),
       };
 
-      const unresolvedBefore = repository.issues.filter((i) => !i.isResolved).length;
-      const criticalBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'critical').length;
-      const highBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'high').length;
-      const mediumBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'medium').length;
-      const lowBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'low').length;
+      const unresolvedBefore = repoIssues.filter((i) => !i.isResolved).length;
+      const criticalBefore = repoIssues.filter((i) => !i.isResolved && i.severity === 'critical').length;
+      const highBefore = repoIssues.filter((i) => !i.isResolved && i.severity === 'high').length;
+      const mediumBefore = repoIssues.filter((i) => !i.isResolved && i.severity === 'medium').length;
+      const lowBefore = repoIssues.filter((i) => !i.isResolved && i.severity === 'low').length;
 
       // Update comparison record
       setRecentComparison({
@@ -255,7 +274,7 @@ export default function App() {
 
       // Update history
       const newHistory = [
-        ...(repository.healthHistory || []),
+        ...(currentRepo.healthHistory || []),
         {
           date: 'Now',
           score: newScore,
@@ -264,7 +283,7 @@ export default function App() {
       ];
 
       setRepository({
-        ...repository,
+        ...currentRepo,
         scores: updatedScores,
         issues: updatedIssues,
         healthHistory: newHistory,
@@ -272,7 +291,7 @@ export default function App() {
 
       setActivePR(prDetails);
       navigate('success');
-    }, 1100);
+    }, 1000);
   };
 
   // Automated Quick Fix for a single issue

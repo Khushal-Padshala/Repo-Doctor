@@ -25,9 +25,16 @@ const DEFAULT_PREVENTION: PreventionRecommendation = {
 };
 
 export const PreventionRecommendationsCard: React.FC<PreventionRecommendationsCardProps> = ({
-  prevention = DEFAULT_PREVENTION,
+  prevention,
 }) => {
-  const [checks, setChecks] = useState(prevention.recommendedChecks || DEFAULT_PREVENTION.recommendedChecks);
+  const activePrevention: PreventionRecommendation = {
+    ...DEFAULT_PREVENTION,
+    ...(prevention || {}),
+    actionItems: prevention?.actionItems?.length ? prevention.actionItems : DEFAULT_PREVENTION.actionItems,
+    recommendedChecks: prevention?.recommendedChecks?.length ? prevention.recommendedChecks : DEFAULT_PREVENTION.recommendedChecks,
+  };
+
+  const [checks, setChecks] = useState(activePrevention.recommendedChecks);
 
   const toggleCheck = (id: string) => {
     setChecks((prev) =>
@@ -49,7 +56,7 @@ export const PreventionRecommendationsCard: React.FC<PreventionRecommendationsCa
           PREVENT RECURRING ISSUES
         </h3>
         <p className="font-urbanist text-sm text-[#F3E9EC]/70 mt-1">
-          {prevention.whyItHelps}
+          {activePrevention.whyItHelps}
         </p>
       </div>
 
@@ -61,7 +68,7 @@ export const PreventionRecommendationsCard: React.FC<PreventionRecommendationsCa
           </div>
 
           <ul className="space-y-3 font-urbanist text-xs text-[#F3E9EC]/80">
-            {prevention.actionItems.map((item, idx) => (
+            {activePrevention.actionItems.map((item, idx) => (
               <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#2C1B2F] text-[#B47A9A] font-bold text-[10px] mt-0.5 border border-[#5E3A5C]">
                   ✓
