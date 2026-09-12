@@ -1,0 +1,6 @@
+{
+  "name": "Repo Doctor",
+  "description": "AI-powered repository health analyzer. Diagnoses vulnerabilities, code quality, git hygiene, and CI/CD pipelines with automated treatment pull requests.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -3,8 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.egg-info/
-dist/
-build/
+/build/
+
+# Node dependencies
+node_modules/
+frontend/node_modules/
+.npm/
 
 # Virtual environments
 .venv/

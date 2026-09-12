@@ -1,0 +1,589 @@
+import React, { useState, useEffect } from 'react';
+import {
+  ScreenType,
+  RepositoryData,
+  Issue,
+  PullRequestDetails,
+  UserProfile,
+  ImprovementComparison
+} from './types';
+import {
+  calculateGrade
+} from './data/mockData';
+import { createRepositoryFromInput, fetchRealRepositoryAnalysis } from './services/repositoryService';
+import { Header } from './components/Header';
+import { LandingPage } from './components/LandingPage';
+import { SignInPage } from './components/SignInPage';
+import { RepositorySelectionPage } from './components/RepositorySelectionPage';
+import { CheckupScanner } from './components/CheckupScanner';
+import { Dashboard } from './components/Dashboard';
+import { IssueDetails } from './components/IssueDetails';
+import { TreatmentPage } from './components/TreatmentPage';
+import { SuccessState } from './components/SuccessState';
+import { PullRequestModal } from './components/PullRequestModal';
+
+export default function App() {
+  // Authentication state - Starts logged out
+  const [user, setUser] = useState<UserProfile | null>(null);
+
+  // Screen routing state - Starts on landing page
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path === '/sign-in') return 'sign-in';
+      if (path === '/repositories') return 'repositories';
+      if (path === '/dashboard') return 'dashboard';
+    }
+    return 'landing';
+  });
+
+  const [repository, setRepository] = useState<RepositoryData | null>(null);
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [activePR, setActivePR] = useState<PullRequestDetails | null>(null);
+  const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [isCreatingPR, setIsCreatingPR] = useState<boolean>(false);
+  const [isPRModalOpen, setIsPRModalOpen] = useState<boolean>(false);
+  const [pendingRepoUrl, setPendingRepoUrl] = useState<string>('');
+  const [isGitHubAuthenticating, setIsGitHubAuthenticating] = useState<boolean>(false);
+  const [recentComparison, setRecentComparison] = useState<ImprovementComparison | null>(null);
+
+  // Sync state with browser URL
+  const navigate = (screen: ScreenType) => {
+    setCurrentScreen(screen);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (typeof window !== 'undefined' && window.history) {
+      let targetPath = '/';
+      if (screen === 'sign-in') targetPath = '/sign-in';
+      else if (screen === 'repositories') targetPath = '/repositories';
+      else if (
+        screen === 'dashboard' ||
+        screen === 'issue-details' ||
+        screen === 'treatment' ||
+        screen === 'success'
+      ) {
+        targetPath = '/dashboard';
+      }
+
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ screen }, '', targetPath);
+      }
+    }
+  };
+
+  // Listen to browser Back/Forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/sign-in') {
+        setCurrentScreen('sign-in');
+      } else if (path === '/repositories') {
+        setCurrentScreen('repositories');
+      } else if (path === '/dashboard') {
+        setCurrentScreen('dashboard');
+      } else {
+        setCurrentScreen('landing');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // 1. Authenticate with GitHub (simulated)
+  const handleContinueWithGitHub = () => {
+    setIsGitHubAuthenticating(true);
+    setTimeout(() => {
+      setIsGitHubAuthenticating(false);
+      const simulatedUser: UserProfile = {
+        id: 'user-gh-1',
+        name: 'Developer',
+        username: '@developer',
+        email: 'developer@acme.corp',
+        avatarUrl: '',
+        provider: 'github',
+        organization: 'acme-corp'
+      };
+      setUser(simulatedUser);
+      navigate('repositories');
+    }, 600);
+  };
+
+  // 2. Authenticate with Google (simulated)
+  const handleContinueWithGoogle = () => {
+    const simulatedUser: UserProfile = {
+      id: 'user-google-1',
+      name: 'Developer',
+      username: '@developer.google',
+      email: 'developer@gmail.com',
+      avatarUrl: '',
+      provider: 'google',
+      organization: 'acme-corp'
+    };
+    setUser(simulatedUser);
+    navigate('repositories');
+  };
+
+  // Logout
+  const handleLogout = () => {
+    setUser(null);
+    navigate('landing');
+  };
+
+  // Switch Account
+  const handleSwitchAccount = () => {
+    setUser(null);
+    navigate('sign-in');
+  };
+
+  // 3. Analyze Custom Repository URL scan
+  const handleCustomRepoSubmit = (repoUrl: string) => {
+    setPendingRepoUrl(repoUrl);
+    setIsScanning(true);
+    // Fetch in background during scan stages animation
+    fetchRealRepositoryAnalysis(repoUrl).then((realRepo) => {
+      setRepository(realRepo);
+    });
+  };
+
+  // Scanner Completion -> Loads selected repository into the existing Dashboard
+  const handleScanComplete = async () => {
+    const targetUrl = pendingRepoUrl || 'developer/repository';
+    if (!repository || repository.url !== targetUrl) {
+      const newRepo = await fetchRealRepositoryAnalysis(targetUrl);
+      setRepository(newRepo);
+    }
+    setIsScanning(false);
+    navigate('dashboard');
+  };
+
+  // Re-run checkup from Dashboard
+  const handleReScan = () => {
+    if (repository) {
+      setPendingRepoUrl(repository.url);
+      setIsScanning(true);
+    }
+  };
+
+  // View Fix clicked from Dashboard -> Go to Issue Details
+  const handleViewFix = (issue: Issue) => {
+    setSelectedIssue(issue);
+    navigate('issue-details');
+  };
+
+  // Apply Fix clicked from Issue Details -> Go to Treatment page
+  const handleApplyFix = (issue: Issue) => {
+    setSelectedIssue(issue);
+    navigate('treatment');
+  };
+
+  // Create Pull Request clicked from Treatment page
+  const handleCreatePullRequest = (issue: Issue) => {
+    if (!repository) return;
+    setIsCreatingPR(true);
+
+    setTimeout(() => {
+      setIsCreatingPR(false);
+
+      const scoreBefore = repository.scores.overall;
+      const gradeBefore = repository.scores.letterGrade;
+      const newScore = Math.min(100, scoreBefore + issue.scoreImpact.overall);
+      const gradeAfterInfo = calculateGrade(newScore);
+
+      const prDetails: PullRequestDetails = {
+        prNumber: issue.prNumber || Math.floor(100 + Math.random() * 900),
+        title: issue.prTitle,
+        branchName: issue.targetBranch,
+        baseBranch: repository.defaultBranch,
+        author: 'repo-doctor[bot]',
+        createdAt: 'Just now',
+        scoreBefore,
+        gradeBefore,
+        scoreAfter: newScore,
+        gradeAfter: gradeAfterInfo.grade,
+        issue,
+        status: 'open',
+      };
+
+      // Mark the issue as resolved and update scores in repository state
+      const updatedIssues = repository.issues.map((i) =>
+        i.id === issue.id ? { ...i, isResolved: true } : i
+      );
+
+      const updatedScores = {
+        ...repository.scores,
+        overall: newScore,
+        letterGrade: gradeAfterInfo.grade,
+        gradeDescription: gradeAfterInfo.desc,
+        security: Math.min(100, repository.scores.security + issue.scoreImpact.security),
+        quality: Math.min(100, repository.scores.quality + issue.scoreImpact.quality),
+        hygiene: Math.min(100, repository.scores.hygiene + issue.scoreImpact.hygiene),
+        docs: Math.min(100, repository.scores.docs + issue.scoreImpact.docs),
+        cicd: Math.min(100, repository.scores.cicd + issue.scoreImpact.cicd),
+      };
+
+      const unresolvedBefore = repository.issues.filter((i) => !i.isResolved).length;
+      const criticalBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'critical').length;
+      const highBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'high').length;
+      const mediumBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'medium').length;
+      const lowBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'low').length;
+
+      // Update comparison record
+      setRecentComparison({
+        scoreBefore,
+        scoreAfter: newScore,
+        gradeBefore,
+        gradeAfter: gradeAfterInfo.grade,
+        totalIssuesBefore: unresolvedBefore,
+        totalIssuesAfter: Math.max(0, unresolvedBefore - 1),
+        criticalBefore,
+        criticalAfter: Math.max(0, criticalBefore - (issue.severity === 'critical' ? 1 : 0)),
+        highBefore,
+        highAfter: Math.max(0, highBefore - (issue.severity === 'high' ? 1 : 0)),
+        mediumBefore,
+        mediumAfter: Math.max(0, mediumBefore - (issue.severity === 'medium' ? 1 : 0)),
+        lowBefore,
+        lowAfter: Math.max(0, lowBefore - (issue.severity === 'low' ? 1 : 0)),
+        fixedCount: 1,
+        recentlyFixedTitles: [issue.title],
+        timestamp: 'Just now'
+      });
+
+      // Update history
+      const newHistory = [
+        ...(repository.healthHistory || []),
+        {
+          date: 'Now',
+          score: newScore,
+          label: `PR #${prDetails.prNumber}: ${issue.title.slice(0, 24)}...`
+        }
+      ];
+
+      setRepository({
+        ...repository,
+        scores: updatedScores,
+        issues: updatedIssues,
+        healthHistory: newHistory,
+      });
+
+      setActivePR(prDetails);
+      navigate('success');
+    }, 1100);
+  };
+
+  // Automated Quick Fix for a single issue
+  const handleApplyQuickFix = async (issueId: string) => {
+    if (!repository) return;
+    const target = repository.issues.find((i) => i.id === issueId);
+    if (!target || target.isResolved) return;
+
+    const scoreBefore = repository.scores.overall;
+    const gradeBefore = repository.scores.letterGrade;
+    const newScore = Math.min(100, scoreBefore + target.scoreImpact.overall);
+    const gradeAfterInfo = calculateGrade(newScore);
+
+    const updatedIssues = repository.issues.map((i) =>
+      i.id === issueId ? { ...i, isResolved: true } : i
+    );
+
+    const updatedScores = {
+      ...repository.scores,
+      overall: newScore,
+      letterGrade: gradeAfterInfo.grade,
+      gradeDescription: gradeAfterInfo.desc,
+      security: Math.min(100, repository.scores.security + target.scoreImpact.security),
+      quality: Math.min(100, repository.scores.quality + target.scoreImpact.quality),
+      hygiene: Math.min(100, repository.scores.hygiene + target.scoreImpact.hygiene),
+      docs: Math.min(100, repository.scores.docs + target.scoreImpact.docs),
+      cicd: Math.min(100, repository.scores.cicd + target.scoreImpact.cicd),
+    };
+
+    const unresolvedBefore = repository.issues.filter((i) => !i.isResolved).length;
+    const criticalBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'critical').length;
+    const highBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'high').length;
+    const mediumBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'medium').length;
+    const lowBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'low').length;
+
+    setRecentComparison({
+      scoreBefore,
+      scoreAfter: newScore,
+      gradeBefore,
+      gradeAfter: gradeAfterInfo.grade,
+      totalIssuesBefore: unresolvedBefore,
+      totalIssuesAfter: Math.max(0, unresolvedBefore - 1),
+      criticalBefore,
+      criticalAfter: Math.max(0, criticalBefore - (target.severity === 'critical' ? 1 : 0)),
+      highBefore,
+      highAfter: Math.max(0, highBefore - (target.severity === 'high' ? 1 : 0)),
+      mediumBefore,
+      mediumAfter: Math.max(0, mediumBefore - (target.severity === 'medium' ? 1 : 0)),
+      lowBefore,
+      lowAfter: Math.max(0, lowBefore - (target.severity === 'low' ? 1 : 0)),
+      fixedCount: 1,
+      recentlyFixedTitles: [target.title],
+      timestamp: 'Just now'
+    });
+
+    const newHistory = [
+      ...(repository.healthHistory || []),
+      {
+        date: 'Now',
+        score: newScore,
+        label: `Quick Fix: ${target.id}`
+      }
+    ];
+
+    setRepository({
+      ...repository,
+      scores: updatedScores,
+      issues: updatedIssues,
+      healthHistory: newHistory,
+    });
+  };
+
+  // Automated Quick Fix for all actionable issues at once
+  const handleApplyAllQuickFixes = async () => {
+    if (!repository) return;
+    const targets = repository.issues.filter((i) => i.canQuickFix && !i.isResolved);
+    if (targets.length === 0) return;
+
+    const scoreBefore = repository.scores.overall;
+    const gradeBefore = repository.scores.letterGrade;
+
+    let overallGain = 0;
+    let secGain = 0;
+    let qualGain = 0;
+    let hygGain = 0;
+    let docGain = 0;
+    let cicdGain = 0;
+
+    targets.forEach((t) => {
+      overallGain += t.scoreImpact.overall;
+      secGain += t.scoreImpact.security;
+      qualGain += t.scoreImpact.quality;
+      hygGain += t.scoreImpact.hygiene;
+      docGain += t.scoreImpact.docs;
+      cicdGain += t.scoreImpact.cicd;
+    });
+
+    const newScore = Math.min(100, scoreBefore + overallGain);
+    const gradeAfterInfo = calculateGrade(newScore);
+
+    const targetIds = new Set(targets.map((t) => t.id));
+    const updatedIssues = repository.issues.map((i) =>
+      targetIds.has(i.id) ? { ...i, isResolved: true } : i
+    );
+
+    const updatedScores = {
+      ...repository.scores,
+      overall: newScore,
+      letterGrade: gradeAfterInfo.grade,
+      gradeDescription: gradeAfterInfo.desc,
+      security: Math.min(100, repository.scores.security + secGain),
+      quality: Math.min(100, repository.scores.quality + qualGain),
+      hygiene: Math.min(100, repository.scores.hygiene + hygGain),
+      docs: Math.min(100, repository.scores.docs + docGain),
+      cicd: Math.min(100, repository.scores.cicd + cicdGain),
+    };
+
+    const unresolvedBefore = repository.issues.filter((i) => !i.isResolved).length;
+    const criticalBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'critical').length;
+    const highBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'high').length;
+    const mediumBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'medium').length;
+    const lowBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'low').length;
+
+    const critFixed = targets.filter((t) => t.severity === 'critical').length;
+    const highFixed = targets.filter((t) => t.severity === 'high').length;
+    const medFixed = targets.filter((t) => t.severity === 'medium').length;
+    const lowFixed = targets.filter((t) => t.severity === 'low').length;
+
+    setRecentComparison({
+      scoreBefore,
+      scoreAfter: newScore,
+      gradeBefore,
+      gradeAfter: gradeAfterInfo.grade,
+      totalIssuesBefore: unresolvedBefore,
+      totalIssuesAfter: Math.max(0, unresolvedBefore - targets.length),
+      criticalBefore,
+      criticalAfter: Math.max(0, criticalBefore - critFixed),
+      highBefore,
+      highAfter: Math.max(0, highBefore - highFixed),
+      mediumBefore,
+      mediumAfter: Math.max(0, mediumBefore - medFixed),
+      lowBefore,
+      lowAfter: Math.max(0, lowBefore - lowFixed),
+      fixedCount: targets.length,
+      recentlyFixedTitles: targets.map((t) => t.title),
+      timestamp: 'Just now'
+    });
+
+    const newHistory = [
+      ...(repository.healthHistory || []),
+      {
+        date: 'Now',
+        score: newScore,
+        label: `Applied ${targets.length} Quick Fixes`
+      }
+    ];
+
+    setRepository({
+      ...repository,
+      scores: updatedScores,
+      issues: updatedIssues,
+      healthHistory: newHistory,
+    });
+  };
+
+  // Navigate to next issue from success state
+  const handleDiagnoseNext = () => {
+    if (repository) {
+      const nextUnresolved = repository.issues.find((i) => !i.isResolved);
+      if (nextUnresolved) {
+        setSelectedIssue(nextUnresolved);
+        navigate('issue-details');
+      } else {
+        navigate('dashboard');
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#00030E] font-urbanist text-[#F3E9EC] selection:bg-[#B47A9A]/30 selection:text-[#F3E9EC]">
+      {/* Top Application Header */}
+      <Header
+        currentScreen={currentScreen}
+        onNavigate={navigate}
+        repository={repository}
+        onNewScan={() => {
+          if (user) {
+            navigate('repositories');
+          } else {
+            navigate('landing');
+          }
+        }}
+        user={user}
+        onLogout={handleLogout}
+        onSwitchAccount={handleSwitchAccount}
+        onSignIn={() => navigate('sign-in')}
+      />
+
+      {/* Screen Routing */}
+      <main>
+        {/* 1. Landing Page */}
+        {currentScreen === 'landing' && (
+          <LandingPage
+            onContinueWithGitHub={handleContinueWithGitHub}
+            onContinueWithGoogle={handleContinueWithGoogle}
+            onNavigateToSignIn={() => navigate('sign-in')}
+            isGitHubLoading={isGitHubAuthenticating}
+          />
+        )}
+
+        {/* 2. Sign In Page */}
+        {currentScreen === 'sign-in' && (
+          <SignInPage
+            onLoginSuccess={(provider) => {
+              if (provider === 'google') {
+                handleContinueWithGoogle();
+              } else {
+                const simulatedUser: UserProfile = {
+                  id: 'user-gh-1',
+                  name: 'Developer',
+                  username: '@developer',
+                  email: 'developer@acme.corp',
+                  avatarUrl: '',
+                  provider: 'github',
+                  organization: 'acme-corp'
+                };
+                setUser(simulatedUser);
+                navigate('repositories');
+              }
+            }}
+            onBackToLanding={() => navigate('landing')}
+          />
+        )}
+
+        {/* 3. Repository Selection Page */}
+        {currentScreen === 'repositories' && (
+          <RepositorySelectionPage
+            user={user}
+            onCustomRepoSubmit={handleCustomRepoSubmit}
+            onAnalyzeRepository={handleCustomRepoSubmit}
+            onSwitchAccount={handleSwitchAccount}
+            isAnalyzing={isScanning}
+          />
+        )}
+
+        {/* 4. Existing Repo Doctor Dashboard */}
+        {currentScreen === 'dashboard' && (
+          repository ? (
+            <Dashboard
+              repository={repository}
+              onViewFix={handleViewFix}
+              onReScan={handleReScan}
+              onApplyQuickFix={handleApplyQuickFix}
+              onApplyAllQuickFixes={handleApplyAllQuickFixes}
+              recentComparison={recentComparison}
+              onDismissComparison={() => setRecentComparison(null)}
+            />
+          ) : (
+            // Fallback if directly accessed without analyzing a repo
+            <div className="flex min-h-[60vh] flex-col items-center justify-center p-8 text-center font-urbanist">
+              <p className="text-[#B47A9A]/80 mb-4 text-sm font-medium">No repository analyzed yet.</p>
+              <button
+                onClick={() => navigate(user ? 'repositories' : 'landing')}
+                className="rounded-full bg-[#F3E9EC] px-6 py-2.5 font-urbanist text-xs font-bold uppercase tracking-wider text-[#00030E] hover:bg-[#B47A9A] transition shadow-lg"
+              >
+                Analyze a Repository
+              </button>
+            </div>
+          )
+        )}
+
+        {/* 5. Issue Details Screen (Existing) */}
+        {currentScreen === 'issue-details' && selectedIssue && (
+          <IssueDetails
+            issue={selectedIssue}
+            onApplyFix={handleApplyFix}
+            onBack={() => navigate('dashboard')}
+          />
+        )}
+
+        {/* 6. Treatment Screen (Existing) */}
+        {currentScreen === 'treatment' && selectedIssue && (
+          <TreatmentPage
+            issue={selectedIssue}
+            onCreatePullRequest={handleCreatePullRequest}
+            onBack={() => navigate('issue-details')}
+            isCreatingPR={isCreatingPR}
+          />
+        )}
+
+        {/* 7. Success State Screen (Existing) */}
+        {currentScreen === 'success' && activePR && (
+          <SuccessState
+            pr={activePR}
+            onViewPullRequest={() => setIsPRModalOpen(true)}
+            onBackToDashboard={() => navigate('dashboard')}
+            onDiagnoseNext={handleDiagnoseNext}
+          />
+        )}
+      </main>
+
+      {/* Background Analysis Scanner Modal (Existing) */}
+      {isScanning && (
+        <CheckupScanner
+          repoName={pendingRepoUrl || 'username/repository'}
+          onComplete={handleScanComplete}
+        />
+      )}
+
+      {/* Pull Request GitHub Drawer Modal (Existing) */}
+      <PullRequestModal
+        pr={activePR}
+        isOpen={isPRModalOpen}
+        onClose={() => setIsPRModalOpen(false)}
+      />
+    </div>
+  );
+}
