@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   ArrowRight,
   AlertCircle,
@@ -30,20 +30,21 @@ export const RepositorySelectionPage: React.FC<RepositorySelectionPageProps> = (
   onSwitchAccount,
   isAnalyzing = false
 }) => {
-  const [repoUrl, setRepoUrl] = useState('');
+  const [repoUrl, setRepoUrl] = useState('https://github.com/Khushal-Padshala/Repo-Doctor');
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isGitHubConnecting, setIsGitHubConnecting] = useState(false);
   const [isGitHubConnected, setIsGitHubConnected] = useState(user?.provider === 'github');
 
-  const parsedInfo: ParsedRepoInfo = parseGitHubUrl(repoUrl);
+  const effectiveUrl = repoUrl.trim() || 'https://github.com/Khushal-Padshala/Repo-Doctor';
+  const parsedInfo: ParsedRepoInfo = parseGitHubUrl(effectiveUrl);
   const isInputNonEmpty = repoUrl.trim().length > 0;
   const isInvalid = isInputNonEmpty && !parsedInfo.isValid;
-  const isValid = isInputNonEmpty && parsedInfo.isValid;
+  const isValid = parsedInfo.isValid;
 
   const handleAnalyze = () => {
-    if (!isValid) return;
     const submitFn = onAnalyzeRepository || onCustomRepoSubmit;
-    submitFn(parsedInfo.url || repoUrl.trim());
+    const target = parsedInfo.isValid ? (parsedInfo.url || effectiveUrl) : effectiveUrl;
+    submitFn(target);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -38,13 +38,21 @@ export default function App() {
     return 'landing';
   });
 
-  const [repository, setRepository] = useState<RepositoryData | null>(null);
+  const [repository, setRepository] = useState<RepositoryData | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('repo_doctor_active_repo');
+        if (cached) return JSON.parse(cached);
+      } catch (e) {}
+    }
+    return createRepositoryFromInput('https://github.com/Khushal-Padshala/Repo-Doctor');
+  });
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [activePR, setActivePR] = useState<PullRequestDetails | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [isCreatingPR, setIsCreatingPR] = useState<boolean>(false);
   const [isPRModalOpen, setIsPRModalOpen] = useState<boolean>(false);
-  const [pendingRepoUrl, setPendingRepoUrl] = useState<string>('');
+  const [pendingRepoUrl, setPendingRepoUrl] = useState<string>('https://github.com/Khushal-Padshala/Repo-Doctor');
   const [isGitHubAuthenticating, setIsGitHubAuthenticating] = useState<boolean>(false);
   const [recentComparison, setRecentComparison] = useState<ImprovementComparison | null>(null);
 
@@ -107,7 +115,7 @@ export default function App() {
       };
       setUser(simulatedUser);
       navigate('repositories');
-    }, 600);
+    }, 400);
   };
 
   // 2. Authenticate with Google (simulated)
@@ -139,11 +147,14 @@ export default function App() {
 
   // 3. Analyze Custom Repository URL scan
   const handleCustomRepoSubmit = (repoUrl: string) => {
-    const targetUrl = repoUrl.trim() || 'Khushal-Padshala/Repo-Doctor';
+    const targetUrl = repoUrl?.trim() || 'https://github.com/Khushal-Padshala/Repo-Doctor';
     setPendingRepoUrl(targetUrl);
     // Guarantee instant repository availability with deterministic calculation
     const instantRepo = createRepositoryFromInput(targetUrl);
     setRepository(instantRepo);
+    try {
+      localStorage.setItem('repo_doctor_active_repo', JSON.stringify(instantRepo));
+    } catch (e) {}
     setIsScanning(true);
 
     // Fetch live backend data if available in background
@@ -151,6 +162,9 @@ export default function App() {
       .then((realRepo) => {
         if (realRepo) {
           setRepository(realRepo);
+          try {
+            localStorage.setItem('repo_doctor_active_repo', JSON.stringify(realRepo));
+          } catch (e) {}
         }
       })
       .catch((err) => {
@@ -160,10 +174,12 @@ export default function App() {
 
   // Scanner Completion -> Loads selected repository into the Dashboard
   const handleScanComplete = () => {
-    const targetUrl = pendingRepoUrl || 'Khushal-Padshala/Repo-Doctor';
-    if (!repository) {
-      setRepository(createRepositoryFromInput(targetUrl));
-    }
+    const targetUrl = pendingRepoUrl || repository?.url || 'https://github.com/Khushal-Padshala/Repo-Doctor';
+    const finalRepo = repository || createRepositoryFromInput(targetUrl);
+    setRepository(finalRepo);
+    try {
+      localStorage.setItem('repo_doctor_active_repo', JSON.stringify(finalRepo));
+    } catch (e) {}
     setIsScanning(false);
     navigate('dashboard');
   };
@@ -534,6 +550,7 @@ export default function App() {
               onContinueWithGitHub={handleContinueWithGitHub}
               onContinueWithGoogle={handleContinueWithGoogle}
               onNavigateToSignIn={() => navigate('sign-in')}
+              onNavigateToAnalyze={() => navigate('repositories')}
               isGitHubLoading={isGitHubAuthenticating}
             />
           )}

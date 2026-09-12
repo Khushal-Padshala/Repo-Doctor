@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Check,
   ArrowRight,
@@ -48,6 +48,8 @@ export const CheckupScanner: React.FC<CheckupScannerProps> = ({
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isDone, setIsDone] = useState(false);
+  const onCompleteRef = React.useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   const cleanRepoDisplay = repoName.replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '');
 
@@ -61,15 +63,17 @@ export const CheckupScanner: React.FC<CheckupScannerProps> = ({
           setIsDone(true);
           // Smooth automatic navigation to dashboard upon scan completion
           setTimeout(() => {
-            onComplete();
-          }, 350);
+            if (onCompleteRef.current) {
+              onCompleteRef.current();
+            }
+          }, 300);
           return prev;
         }
       });
-    }, 190);
+    }, 140);
 
     return () => clearInterval(timer);
-  }, [onComplete]);
+  }, []);
 
   const progressPercent = isDone
     ? 100
