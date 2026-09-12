@@ -230,23 +230,27 @@ export default function App() {
 
       // Update comparison record
       setRecentComparison({
-        scoreBefore,
-        scoreAfter: newScore,
-        gradeBefore,
-        gradeAfter: gradeAfterInfo.grade,
-        totalIssuesBefore: unresolvedBefore,
-        totalIssuesAfter: Math.max(0, unresolvedBefore - 1),
-        criticalBefore,
-        criticalAfter: Math.max(0, criticalBefore - (issue.severity === 'critical' ? 1 : 0)),
-        highBefore,
-        highAfter: Math.max(0, highBefore - (issue.severity === 'high' ? 1 : 0)),
-        mediumBefore,
-        mediumAfter: Math.max(0, mediumBefore - (issue.severity === 'medium' ? 1 : 0)),
-        lowBefore,
-        lowAfter: Math.max(0, lowBefore - (issue.severity === 'low' ? 1 : 0)),
-        fixedCount: 1,
-        recentlyFixedTitles: [issue.title],
-        timestamp: 'Just now'
+        beforeScore,
+        beforeGrade,
+        beforeActiveIssues: unresolvedBefore,
+        beforeBreakdown: {
+          critical: criticalBefore,
+          high: highBefore,
+          medium: mediumBefore,
+          low: lowBefore,
+        },
+        afterScore: newScore,
+        afterGrade: gradeAfterInfo.grade,
+        afterActiveIssues: Math.max(0, unresolvedBefore - 1),
+        afterBreakdown: {
+          critical: Math.max(0, criticalBefore - (issue.severity === 'critical' ? 1 : 0)),
+          high: Math.max(0, highBefore - (issue.severity === 'high' ? 1 : 0)),
+          medium: Math.max(0, mediumBefore - (issue.severity === 'medium' ? 1 : 0)),
+          low: Math.max(0, lowBefore - (issue.severity === 'low' ? 1 : 0)),
+        },
+        resolvedCount: 1,
+        pointsGained: Math.max(0, newScore - scoreBefore),
+        recentFixedTitle: issue.title,
       });
 
       // Update history
@@ -305,23 +309,27 @@ export default function App() {
     const lowBefore = repository.issues.filter((i) => !i.isResolved && i.severity === 'low').length;
 
     setRecentComparison({
-      scoreBefore,
-      scoreAfter: newScore,
-      gradeBefore,
-      gradeAfter: gradeAfterInfo.grade,
-      totalIssuesBefore: unresolvedBefore,
-      totalIssuesAfter: Math.max(0, unresolvedBefore - 1),
-      criticalBefore,
-      criticalAfter: Math.max(0, criticalBefore - (target.severity === 'critical' ? 1 : 0)),
-      highBefore,
-      highAfter: Math.max(0, highBefore - (target.severity === 'high' ? 1 : 0)),
-      mediumBefore,
-      mediumAfter: Math.max(0, mediumBefore - (target.severity === 'medium' ? 1 : 0)),
-      lowBefore,
-      lowAfter: Math.max(0, lowBefore - (target.severity === 'low' ? 1 : 0)),
-      fixedCount: 1,
-      recentlyFixedTitles: [target.title],
-      timestamp: 'Just now'
+      beforeScore,
+      beforeGrade,
+      beforeActiveIssues: unresolvedBefore,
+      beforeBreakdown: {
+        critical: criticalBefore,
+        high: highBefore,
+        medium: mediumBefore,
+        low: lowBefore,
+      },
+      afterScore: newScore,
+      afterGrade: gradeAfterInfo.grade,
+      afterActiveIssues: Math.max(0, unresolvedBefore - 1),
+      afterBreakdown: {
+        critical: Math.max(0, criticalBefore - (target.severity === 'critical' ? 1 : 0)),
+        high: Math.max(0, highBefore - (target.severity === 'high' ? 1 : 0)),
+        medium: Math.max(0, mediumBefore - (target.severity === 'medium' ? 1 : 0)),
+        low: Math.max(0, lowBefore - (target.severity === 'low' ? 1 : 0)),
+      },
+      resolvedCount: 1,
+      pointsGained: Math.max(0, newScore - scoreBefore),
+      recentFixedTitle: target.title,
     });
 
     const newHistory = [
@@ -398,23 +406,27 @@ export default function App() {
     const lowFixed = targets.filter((t) => t.severity === 'low').length;
 
     setRecentComparison({
-      scoreBefore,
-      scoreAfter: newScore,
-      gradeBefore,
-      gradeAfter: gradeAfterInfo.grade,
-      totalIssuesBefore: unresolvedBefore,
-      totalIssuesAfter: Math.max(0, unresolvedBefore - targets.length),
-      criticalBefore,
-      criticalAfter: Math.max(0, criticalBefore - critFixed),
-      highBefore,
-      highAfter: Math.max(0, highBefore - highFixed),
-      mediumBefore,
-      mediumAfter: Math.max(0, mediumBefore - medFixed),
-      lowBefore,
-      lowAfter: Math.max(0, lowBefore - lowFixed),
-      fixedCount: targets.length,
-      recentlyFixedTitles: targets.map((t) => t.title),
-      timestamp: 'Just now'
+      beforeScore,
+      beforeGrade,
+      beforeActiveIssues: unresolvedBefore,
+      beforeBreakdown: {
+        critical: criticalBefore,
+        high: highBefore,
+        medium: mediumBefore,
+        low: lowBefore,
+      },
+      afterScore: newScore,
+      afterGrade: gradeAfterInfo.grade,
+      afterActiveIssues: Math.max(0, unresolvedBefore - targets.length),
+      afterBreakdown: {
+        critical: Math.max(0, criticalBefore - critFixed),
+        high: Math.max(0, highBefore - highFixed),
+        medium: Math.max(0, mediumBefore - medFixed),
+        low: Math.max(0, lowBefore - lowFixed),
+      },
+      resolvedCount: targets.length,
+      pointsGained: Math.max(0, newScore - scoreBefore),
+      recentFixedTitle: targets.map((t) => t.title).join(', '),
     });
 
     const newHistory = [
@@ -564,7 +576,10 @@ export default function App() {
           <SuccessState
             pr={activePR}
             onViewPullRequest={() => setIsPRModalOpen(true)}
-            onBackToDashboard={() => navigate('dashboard')}
+            onBackToDashboard={() => {
+              setIsPRModalOpen(false);
+              navigate('dashboard');
+            }}
             onDiagnoseNext={handleDiagnoseNext}
           />
         )}
@@ -583,6 +598,10 @@ export default function App() {
         pr={activePR}
         isOpen={isPRModalOpen}
         onClose={() => setIsPRModalOpen(false)}
+        onMerged={() => {
+          setIsPRModalOpen(false);
+          navigate('dashboard');
+        }}
       />
     </div>
   );

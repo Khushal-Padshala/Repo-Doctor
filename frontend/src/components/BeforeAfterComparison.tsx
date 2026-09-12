@@ -98,19 +98,19 @@ export const BeforeAfterComparison: React.FC<BeforeAfterComparisonProps> = ({
           {/* Breakdown */}
           <div className="grid grid-cols-4 gap-2 text-center font-urbanist text-xs">
             <div className="rounded-xl bg-[#0B0E1A] border border-[#5E3A5C] py-2">
-              <span className="font-bold text-[#F3E9EC] block">{beforeBreakdown.critical}</span>
+              <span className="font-bold text-[#F3E9EC] block">{beforeBreakdown?.critical ?? 0}</span>
               <span className="text-[10px] text-[#8A334E] font-medium uppercase">Critical</span>
             </div>
             <div className="rounded-xl bg-[#0B0E1A] border border-[#5E3A5C] py-2">
-              <span className="font-bold text-[#F3E9EC] block">{beforeBreakdown.high}</span>
+              <span className="font-bold text-[#F3E9EC] block">{beforeBreakdown?.high ?? 0}</span>
               <span className="text-[10px] text-[#B47A9A] font-medium uppercase">High</span>
             </div>
             <div className="rounded-xl bg-[#0B0E1A] border border-[#5E3A5C] py-2">
-              <span className="font-bold text-[#F3E9EC] block">{beforeBreakdown.medium}</span>
+              <span className="font-bold text-[#F3E9EC] block">{beforeBreakdown?.medium ?? 0}</span>
               <span className="text-[10px] text-[#F3E9EC]/70 font-medium uppercase">Medium</span>
             </div>
             <div className="rounded-xl bg-[#0B0E1A] border border-[#5E3A5C] py-2">
-              <span className="font-bold text-[#F3E9EC] block">{beforeBreakdown.low}</span>
+              <span className="font-bold text-[#F3E9EC] block">{beforeBreakdown?.low ?? 0}</span>
               <span className="text-[10px] text-[#F3E9EC]/50 font-medium uppercase">Low</span>
             </div>
           </div>
@@ -139,19 +139,19 @@ export const BeforeAfterComparison: React.FC<BeforeAfterComparisonProps> = ({
           {/* Breakdown */}
           <div className="grid grid-cols-4 gap-2 text-center font-urbanist text-xs">
             <div className="rounded-xl bg-[#0B0E1A] border border-[#5E3A5C] py-2">
-              <span className="font-bold text-[#F3E9EC] block">{afterBreakdown.critical}</span>
+              <span className="font-bold text-[#F3E9EC] block">{afterBreakdown?.critical ?? 0}</span>
               <span className="text-[10px] text-[#8A334E] font-medium uppercase">Critical</span>
             </div>
             <div className="rounded-xl bg-[#0B0E1A] border border-[#5E3A5C] py-2">
-              <span className="font-bold text-[#F3E9EC] block">{afterBreakdown.high}</span>
+              <span className="font-bold text-[#F3E9EC] block">{afterBreakdown?.high ?? 0}</span>
               <span className="text-[10px] text-[#B47A9A] font-medium uppercase">High</span>
             </div>
             <div className="rounded-xl bg-[#0B0E1A] border border-[#5E3A5C] py-2">
-              <span className="font-bold text-[#F3E9EC] block">{afterBreakdown.medium}</span>
+              <span className="font-bold text-[#F3E9EC] block">{afterBreakdown?.medium ?? 0}</span>
               <span className="text-[10px] text-[#F3E9EC]/70 font-medium uppercase">Medium</span>
             </div>
             <div className="rounded-xl bg-[#0B0E1A] border border-[#5E3A5C] py-2">
-              <span className="font-bold text-[#F3E9EC] block">{afterBreakdown.low}</span>
+              <span className="font-bold text-[#F3E9EC] block">{afterBreakdown?.low ?? 0}</span>
               <span className="text-[10px] text-[#F3E9EC]/50 font-medium uppercase">Low</span>
             </div>
           </div>
