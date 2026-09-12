@@ -65,25 +65,17 @@ export const RepositorySelectionPage: React.FC<RepositorySelectionPageProps> = (
       <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-[650px] rounded-full bg-[#5E3A5C]/20 blur-[140px]" />
 
       <div className="relative mx-auto w-full max-w-3xl">
-        {/* Top Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#5E3A5C]/60 pb-6 mb-12">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-[#B47A9A]" />
-              <span className="font-urbanist text-xs font-bold uppercase tracking-widest text-[#B47A9A]">
-                REPOSITORY INTELLIGENCE
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#F3E9EC] font-urbanist">
-              Analyze a repository
-            </h1>
-            <p className="mt-1 text-sm text-[#F3E9EC]/70 font-urbanist">
-              Connect a GitHub repository and run a complete repository health analysis.
-            </p>
+        {/* Top Header Bar */}
+        <div className="flex items-center justify-between gap-4 border-b border-[#5E3A5C]/40 pb-5 mb-10">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 rounded-full bg-[#B47A9A] animate-pulse" />
+            <span className="font-urbanist text-xs font-bold uppercase tracking-widest text-[#B47A9A]">
+              REPOSITORY INTELLIGENCE
+            </span>
           </div>
 
           {/* Secondary Actions */}
-          <div className="flex items-center gap-3 self-start sm:self-auto">
+          <div className="flex items-center gap-3">
             {!isGitHubConnected ? (
               <button
                 id="connect-github-btn"
