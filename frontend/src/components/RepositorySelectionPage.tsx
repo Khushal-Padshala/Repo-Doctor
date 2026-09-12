@@ -204,12 +204,9 @@ export const RepositorySelectionPage: React.FC<RepositorySelectionPageProps> = (
             <button
               id="analyze-repo-submit-btn"
               type="submit"
-              disabled={!isValid || isAnalyzing}
-              className={`w-full flex items-center justify-center gap-2 rounded-xl py-3.5 px-4 text-xs font-bold uppercase tracking-wider transition duration-150 shadow-sm ${
-                isValid && !isAnalyzing
-                  ? 'bg-slate-900 text-white hover:bg-slate-800 cursor-pointer'
-                  : 'bg-slate-100 text-slate-600 cursor-not-allowed border border-slate-200'
-              }`}
+              onClick={handleAnalyze}
+              disabled={isAnalyzing}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 px-4 text-xs font-bold uppercase tracking-wider transition duration-150 shadow-sm bg-slate-900 text-white hover:bg-slate-800 cursor-pointer"
             >
               {isAnalyzing ? (
                 <>

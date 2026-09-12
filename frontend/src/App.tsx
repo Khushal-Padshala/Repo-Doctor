@@ -155,7 +155,8 @@ export default function App() {
     try {
       localStorage.setItem('repo_doctor_active_repo', JSON.stringify(instantRepo));
     } catch (e) {}
-    setIsScanning(true);
+    setIsScanning(false);
+    navigate('dashboard');
 
     // Fetch live backend data if available in background
     fetchRealRepositoryAnalysis(targetUrl)
