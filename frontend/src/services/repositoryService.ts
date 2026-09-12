@@ -57,6 +57,18 @@ export function parseGitHubUrl(input: string): ParsedRepoInfo {
         url: `https://github.com/${owner}/${name}`
       };
     }
+  } else if (segments.length === 1) {
+    const name = segments[0];
+    const validIdentifier = /^[a-zA-Z0-9_.-]+$/;
+    if (validIdentifier.test(name)) {
+      return {
+        isValid: true,
+        owner: 'developer',
+        name,
+        fullName: `developer/${name}`,
+        url: `https://github.com/developer/${name}`
+      };
+    }
   }
 
   return {
@@ -65,7 +77,7 @@ export function parseGitHubUrl(input: string): ParsedRepoInfo {
     name: '',
     fullName: '',
     url: '',
-    errorMessage: 'Enter a valid GitHub repository URL.'
+    errorMessage: 'Enter a valid GitHub repository URL (e.g. https://github.com/owner/repo).'
   };
 }
 

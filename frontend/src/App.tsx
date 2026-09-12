@@ -139,20 +139,30 @@ export default function App() {
 
   // 3. Analyze Custom Repository URL scan
   const handleCustomRepoSubmit = (repoUrl: string) => {
-    setPendingRepoUrl(repoUrl);
+    const targetUrl = repoUrl.trim() || 'Khushal-Padshala/Repo-Doctor';
+    setPendingRepoUrl(targetUrl);
+    // Guarantee instant repository availability with deterministic calculation
+    const instantRepo = createRepositoryFromInput(targetUrl);
+    setRepository(instantRepo);
     setIsScanning(true);
-    // Fetch in background during scan stages animation
-    fetchRealRepositoryAnalysis(repoUrl).then((realRepo) => {
-      setRepository(realRepo);
-    });
+
+    // Fetch live backend data if available in background
+    fetchRealRepositoryAnalysis(targetUrl)
+      .then((realRepo) => {
+        if (realRepo) {
+          setRepository(realRepo);
+        }
+      })
+      .catch((err) => {
+        console.warn('Using baseline repository data:', err);
+      });
   };
 
-  // Scanner Completion -> Loads selected repository into the existing Dashboard
-  const handleScanComplete = async () => {
-    const targetUrl = pendingRepoUrl || 'developer/repository';
-    if (!repository || repository.url !== targetUrl) {
-      const newRepo = await fetchRealRepositoryAnalysis(targetUrl);
-      setRepository(newRepo);
+  // Scanner Completion -> Loads selected repository into the Dashboard
+  const handleScanComplete = () => {
+    const targetUrl = pendingRepoUrl || 'Khushal-Padshala/Repo-Doctor';
+    if (!repository) {
+      setRepository(createRepositoryFromInput(targetUrl));
     }
     setIsScanning(false);
     navigate('dashboard');

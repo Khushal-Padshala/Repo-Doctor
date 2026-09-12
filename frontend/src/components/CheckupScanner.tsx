@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   Check,
   ArrowRight,
-  GitBranch,
-  Layers,
-  Package,
   Shield,
-  Code2,
-  FileText,
-  CheckCircle2,
-  Workflow,
-  Activity
+  Activity,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 
 interface CheckupScannerProps {
@@ -64,13 +59,17 @@ export const CheckupScanner: React.FC<CheckupScannerProps> = ({
         } else {
           clearInterval(timer);
           setIsDone(true);
+          // Smooth automatic navigation to dashboard upon scan completion
+          setTimeout(() => {
+            onComplete();
+          }, 350);
           return prev;
         }
       });
-    }, 380);
+    }, 190);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [onComplete]);
 
   const progressPercent = isDone
     ? 100
@@ -79,53 +78,51 @@ export const CheckupScanner: React.FC<CheckupScannerProps> = ({
   return (
     <div
       id="analysis-progress-overlay"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#00030E]/90 backdrop-blur-xl p-4 animate-in fade-in duration-200 selection:bg-[#B47A9A] selection:text-[#00030E]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-200 selection:bg-blue-500/20"
     >
-      {/* Background subtle radial lighting */}
-      <div className="pointer-events-none absolute h-[500px] w-[500px] rounded-full bg-[#B47A9A]/[0.03] blur-[120px]" />
-
-      <div className="relative w-full max-w-xl rounded-3xl border border-[#5E3A5C] bg-[#0B0E1A] p-8 sm:p-10 shadow-2xl">
+      <div className="relative w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#5E3A5C]/40 pb-6">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-5">
           <div>
-            <div className="font-urbanist text-xs font-bold uppercase tracking-widest text-[#B47A9A] mb-1">
-              REPOSITORY HEALTH ENGINE
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-600 mb-1">
+              <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+              <span>Repository Health Engine</span>
             </div>
-            <h2 className="font-urbanist text-2xl font-bold tracking-tight text-[#F3E9EC] uppercase">
-              {isDone ? 'ANALYSIS COMPLETE' : 'ANALYZING REPOSITORY'}
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 font-sans">
+              {isDone ? 'Analysis Complete' : 'Analyzing Repository'}
             </h2>
-            <div className="font-urbanist text-xs text-[#F3E9EC]/70 mt-1.5 flex items-center gap-1.5">
+            <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 font-sans">
               <span>Repository:</span>
-              <span className="text-[#F3E9EC] font-mono font-medium">{cleanRepoDisplay}</span>
+              <span className="text-slate-900 font-mono font-semibold">{cleanRepoDisplay}</span>
             </div>
           </div>
 
           <button
             onClick={onComplete}
-            className="rounded-full border border-[#5E3A5C] bg-[#2C1B2F] px-4 py-1.5 font-urbanist text-xs font-semibold text-[#F3E9EC] hover:border-[#B47A9A] transition"
+            className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer"
           >
             {isDone ? 'Continue' : 'Skip'}
           </button>
         </div>
 
         {/* Progress Indicator */}
-        <div className="mt-6 space-y-2.5">
-          <div className="flex items-center justify-between text-xs font-urbanist">
-            <span className="text-[#F3E9EC]/80 font-medium">
+        <div className="mt-6 space-y-2">
+          <div className="flex items-center justify-between text-xs font-semibold">
+            <span className="text-slate-700">
               {isDone ? 'Diagnostic finalized' : ANALYSIS_STAGES[currentStep].label}
             </span>
-            <span className="text-[#B47A9A] font-bold">{progressPercent}%</span>
+            <span className="text-blue-600 font-bold font-mono">{progressPercent}%</span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#2C1B2F]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
             <div
-              className="h-full bg-[#B47A9A] transition-all duration-300 ease-out"
+              className="h-full bg-blue-600 transition-all duration-300 ease-out rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
 
         {/* Diagnostic Log Steps */}
-        <div className="mt-6 space-y-2 font-urbanist text-xs max-h-[300px] overflow-y-auto pr-1">
+        <div className="mt-6 space-y-2 text-xs max-h-[260px] overflow-y-auto pr-1">
           {ANALYSIS_STAGES.map((step, idx) => {
             const isCompleted = idx < currentStep || isDone;
             const isCurrent = idx === currentStep && !isDone;
@@ -135,32 +132,32 @@ export const CheckupScanner: React.FC<CheckupScannerProps> = ({
                 key={step.label}
                 className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-all ${
                   isCurrent
-                    ? 'bg-[#2C1B2F] text-[#F3E9EC] border border-[#5E3A5C]'
+                    ? 'bg-blue-50 text-blue-900 border border-blue-200 shadow-xs'
                     : isCompleted
-                    ? 'text-[#F3E9EC]/80 bg-[#0B0E1A]'
-                    : 'text-[#F3E9EC]/30'
+                    ? 'text-slate-800 bg-slate-50/70'
+                    : 'text-slate-400 bg-transparent'
                 }`}
               >
                 <div className="flex items-center gap-3 truncate">
                   <span className="text-xs font-mono">
                     {isCompleted ? (
-                      <span className="text-[#B47A9A]">✓</span>
+                      <span className="text-emerald-600 font-bold">✓</span>
                     ) : isCurrent ? (
-                      <span className="text-[#B47A9A] animate-pulse">◉</span>
+                      <span className="text-blue-600 animate-pulse font-bold">◉</span>
                     ) : (
-                      <span className="text-[#5E3A5C]">○</span>
+                      <span className="text-slate-300">○</span>
                     )}
                   </span>
                   <span className="truncate font-medium">{step.label}</span>
                 </div>
 
                 {isCompleted && (
-                  <span className="text-[10px] font-urbanist font-bold text-[#B47A9A] shrink-0">
+                  <span className="text-[10px] font-bold text-emerald-600 shrink-0">
                     DONE
                   </span>
                 )}
                 {isCurrent && (
-                  <span className="text-[10px] font-urbanist font-bold text-[#F3E9EC] animate-pulse shrink-0">
+                  <span className="text-[10px] font-bold text-blue-600 animate-pulse shrink-0">
                     INSPECTING
                   </span>
                 )}
@@ -170,17 +167,17 @@ export const CheckupScanner: React.FC<CheckupScannerProps> = ({
         </div>
 
         {/* Completion Card */}
-        {isDone ? (
-          <div className="mt-6 rounded-2xl border border-[#5E3A5C] bg-[#2C1B2F]/40 p-5 animate-in fade-in duration-300">
+        {isDone && (
+          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4.5 animate-in fade-in duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <div className="text-xs font-urbanist font-bold uppercase tracking-wider text-[#B47A9A] mb-1">
-                  ANALYSIS FINALIZED
+                <div className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-0.5">
+                  Analysis Finalized
                 </div>
-                <div className="text-base font-bold text-[#F3E9EC] font-urbanist">
+                <div className="text-sm font-bold text-slate-900">
                   {summaryFindings.total} findings identified for {cleanRepoDisplay}
                 </div>
-                <p className="text-xs text-[#F3E9EC]/70 mt-0.5 font-urbanist">
+                <p className="text-[11px] text-slate-600 mt-0.5">
                   Health score, dimension metrics, and remediation patches ready.
                 </p>
               </div>
@@ -188,17 +185,12 @@ export const CheckupScanner: React.FC<CheckupScannerProps> = ({
               <button
                 id="view-analysis-results-btn"
                 onClick={onComplete}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#F3E9EC] px-6 py-3 font-urbanist text-xs font-bold uppercase tracking-wider text-[#00030E] hover:bg-[#B47A9A] transition shrink-0"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition shrink-0 shadow-sm cursor-pointer"
               >
                 <span>View Dashboard</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="mt-4 flex items-center justify-between text-[#F3E9EC]/50 text-xs font-urbanist">
-            <span>Non-invasive AST inspection</span>
-            <span>Stage {currentStep + 1} of {ANALYSIS_STAGES.length}</span>
           </div>
         )}
       </div>
