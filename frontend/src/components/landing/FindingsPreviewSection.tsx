@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   ShieldAlert,
   AlertTriangle,
-  FileCode2,
   ChevronDown,
   ChevronUp,
   Sparkles,
-  ArrowRight,
-  Workflow
+  FileCode2
 } from 'lucide-react';
 
 const exampleFindings = [
   {
     id: 'f-1',
     title: 'Hardcoded AWS Secret Access Key in configuration',
-    severity: 'CRITICAL RISK',
+    severity: 'CRITICAL',
+    severityStyle: 'bg-rose-50 text-rose-700 border-rose-200',
     category: 'SECURITY',
     filePath: 'src/config/aws.ts',
     line: 14,
@@ -28,7 +27,8 @@ const exampleFindings = [
   {
     id: 'f-2',
     title: 'SQL injection risk via raw string interpolation',
-    severity: 'CRITICAL RISK',
+    severity: 'CRITICAL',
+    severityStyle: 'bg-rose-50 text-rose-700 border-rose-200',
     category: 'SECURITY',
     filePath: 'src/db/queries.ts',
     line: 42,
@@ -42,13 +42,14 @@ const exampleFindings = [
   {
     id: 'f-3',
     title: 'Unhandled promise rejection in asynchronous handler',
-    severity: 'REQUIRES ATTENTION',
+    severity: 'MEDIUM',
+    severityStyle: 'bg-amber-50 text-amber-700 border-amber-200',
     category: 'CODE QUALITY',
     filePath: 'src/services/api.ts',
     line: 89,
     confidence: '96.2%',
     scoreImpact: '+4 pts',
-    description: 'Asynchronous fetchUserData call lacks an explicit try/catch handler or .catch() handler, potentially causing Node.js worker crashes.',
+    description: 'Asynchronous fetchUserData call lacks an explicit try/catch handler, potentially causing Node.js worker crashes.',
     codeSnippet: `- async function fetchUserData(id: string) {
 -   const res = await client.get(\`/users/\${id}\`);
 -   return res.data;
@@ -58,145 +59,136 @@ const exampleFindings = [
 +     const res = await client.get(\`/users/\${id}\`);
 +     return res.data;
 +   } catch (err) {
-+     logger.error({ id, err }, 'Failed to fetch user');
-+     throw new AppError('User retrieval failure', { cause: err });
++     logger.error({ err, id }, 'Failed to fetch user');
++     throw err;
 +   }
 + }`,
-    quickFix: 'Wrap async execution with try/catch and structured logging'
-  },
-  {
-    id: 'f-4',
-    title: 'Mutable GitHub Action tag unpinned to commit SHA',
-    severity: 'REQUIRES ATTENTION',
-    category: 'CI/CD',
-    filePath: '.github/workflows/ci.yml',
-    line: 18,
-    confidence: '99.1%',
-    scoreImpact: '+4 pts',
-    description: 'Workflow step uses mutable reference actions/checkout@v4 instead of an immutable 40-character commit hash, introducing supply-chain risks.',
-    codeSnippet: `- uses: actions/checkout@v4
-+ uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2`,
-    quickFix: 'Pin GitHub Action to immutable SHA-256 hash with release comment'
+    quickFix: 'Wrap async network call in try-catch with contextual error logging'
   }
 ];
 
 export const FindingsPreviewSection: React.FC = () => {
-  const [expandedId, setExpandedId] = useState<string | null>('f-1');
+  const [expandedFinding, setExpandedFinding] = useState<string | null>('f-1');
+
+  const toggleExpand = (id: string) => {
+    setExpandedFinding(expandedFinding === id ? null : id);
+  };
 
   return (
-    <section className="relative px-4 sm:px-6 lg:px-12 py-20 border-t border-[#5E3A5C]/60">
+    <section className="relative px-4 sm:px-6 lg:px-12 py-20 border-t border-slate-200 bg-white">
       <div className="mx-auto max-w-7xl">
-        {/* Section Header */}
-        <div className="max-w-3xl pb-10 border-b border-[#5E3A5C]/60">
-          <div className="font-urbanist text-xs font-semibold uppercase tracking-widest text-[#B47A9A] mb-2">
-            Automated Diagnosis
+        {/* Section Heading */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-10 border-b border-slate-200">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
+              Actionable Diagnostics
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+              Diagnostic Findings & Fixes
+            </h2>
+            <p className="mt-2 text-sm sm:text-base text-slate-600">
+              Each finding comes with AST verified explanations, exact line numbers, and AI-engineered pull requests.
+            </p>
           </div>
-          <h2 className="font-urbanist text-3xl sm:text-5xl font-extrabold tracking-tight text-[#F3E9EC] uppercase leading-tight">
-            DEEP REPOSITORY FINDINGS
-          </h2>
-          <p className="mt-3 font-urbanist text-sm sm:text-base text-[#F3E9EC]/70 font-normal leading-relaxed">
-            Every finding provides exact AST line pointers, severity grading, AI confidence ratings, and score recovery projections.
-          </p>
         </div>
 
-        {/* Finding Cards List */}
+        {/* Findings List */}
         <div className="mt-10 space-y-4">
           {exampleFindings.map((finding) => {
-            const isExpanded = expandedId === finding.id;
-            const isCritical = finding.severity === 'CRITICAL RISK';
+            const isExpanded = expandedFinding === finding.id;
 
             return (
               <div
                 key={finding.id}
-                className="rounded-3xl border border-[#5E3A5C] bg-[#0B0E1A] p-6 sm:p-7 transition-all duration-200 hover:border-[#B47A9A]"
+                className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+                  isExpanded
+                    ? 'border-blue-300 bg-white shadow-md'
+                    : 'border-slate-200 bg-slate-50/70 hover:bg-white hover:border-slate-300'
+                }`}
               >
-                {/* Header Row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    {/* Severity Badge in Urbanist */}
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-urbanist text-xs font-bold uppercase tracking-wider ${
-                        isCritical
-                          ? 'bg-[#8A334E]/20 border border-[#8A334E]/50 text-[#F3E9EC]'
-                          : 'bg-[#5E3A5C]/30 border border-[#5E3A5C] text-[#B47A9A]'
-                      }`}
-                    >
-                      {isCritical ? (
-                        <ShieldAlert className="h-3.5 w-3.5 text-[#8A334E]" />
-                      ) : (
-                        <AlertTriangle className="h-3.5 w-3.5 text-[#B47A9A]" />
-                      )}
-                      <span>{finding.severity}</span>
+                {/* Finding Header Bar */}
+                <div
+                  onClick={() => toggleExpand(finding.id)}
+                  className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none"
+                >
+                  <div className="flex items-start sm:items-center gap-3.5">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold border ${finding.severityStyle}`}>
+                      {finding.severity}
                     </span>
 
-                    {/* Category */}
-                    <span className="rounded-full border border-[#5E3A5C] bg-[#2C1B2F] px-3 py-1 font-urbanist text-xs font-semibold uppercase tracking-wider text-[#F3E9EC]">
-                      {finding.category}
-                    </span>
-
-                    {/* Impact Badge */}
-                    <span className="rounded-full border border-[#5E3A5C] bg-[#2C1B2F] px-3 py-1 font-urbanist text-xs font-bold uppercase tracking-wider text-[#B47A9A]">
-                      Impact {finding.scoreImpact}
-                    </span>
-                  </div>
-
-                  {/* Confidence */}
-                  <div className="flex items-center gap-2 font-urbanist text-xs text-[#F3E9EC]/70">
-                    <Sparkles className="h-3.5 w-3.5 text-[#B47A9A]" />
-                    <span>AI CONFIDENCE:</span>
-                    <span className="font-bold text-[#F3E9EC]">{finding.confidence}</span>
-                  </div>
-                </div>
-
-                {/* Finding Title */}
-                <div className="mt-4">
-                  <h3 className="font-urbanist text-lg sm:text-xl font-bold text-[#F3E9EC] tracking-tight">
-                    {finding.title}
-                  </h3>
-                  <p className="mt-1.5 font-urbanist text-sm text-[#F3E9EC]/70 leading-relaxed">
-                    {finding.description}
-                  </p>
-                </div>
-
-                {/* File Location Monospace */}
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#5E3A5C]/40">
-                  <div className="flex items-center gap-2 text-xs text-[#F3E9EC]/70 font-mono">
-                    <FileCode2 className="h-4 w-4 text-[#B47A9A]" />
-                    <span>{finding.filePath}</span>
-                    <span className="text-[#5E3A5C]">:</span>
-                    <span className="text-[#B47A9A] font-semibold">{finding.line}</span>
-                  </div>
-
-                  <button
-                    onClick={() => setExpandedId(isExpanded ? null : finding.id)}
-                    className="inline-flex items-center gap-1.5 font-urbanist text-xs font-semibold text-[#F3E9EC]/80 hover:text-[#F3E9EC] transition"
-                  >
-                    <span>{isExpanded ? 'Hide AST Code Diff' : 'View AST Code Diff'}</span>
-                    {isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-[#B47A9A]" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-[#B47A9A]" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Expanded Code Diff Box */}
-                {isExpanded && (
-                  <div className="mt-5 rounded-2xl border border-[#5E3A5C] bg-[#00030E] p-4 sm:p-5">
-                    <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#5E3A5C]/40">
-                      <span className="font-urbanist text-xs font-semibold uppercase tracking-wider text-[#F3E9EC]/70">
-                        Syntactic Diff Preview
-                      </span>
-                      <span className="font-urbanist text-xs font-semibold text-[#B47A9A]">
-                        Ready for automated pull request
-                      </span>
+                    <div>
+                      <h4 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+                        {finding.title}
+                      </h4>
+                      <div className="mt-1 flex items-center gap-3 text-xs text-slate-500 font-mono">
+                        <span className="flex items-center gap-1">
+                          <FileCode2 className="h-3.5 w-3.5 text-slate-400" />
+                          <span>{finding.filePath}:{finding.line}</span>
+                        </span>
+                        <span>·</span>
+                        <span className="text-slate-600 font-sans">{finding.confidence} confidence</span>
+                      </div>
                     </div>
-                    <pre className="font-mono text-xs text-[#F3E9EC] overflow-x-auto leading-relaxed whitespace-pre p-2">
-                      {finding.codeSnippet}
-                    </pre>
-                    <div className="mt-3 pt-3 border-t border-[#5E3A5C]/40 flex items-center justify-between">
-                      <span className="font-urbanist text-xs text-[#F3E9EC]/70">
-                        Recommended remediation: <span className="text-[#F3E9EC] font-medium">{finding.quickFix}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-bold text-blue-700">
+                      <Sparkles className="h-3 w-3" />
+                      <span>{finding.scoreImpact}</span>
+                    </span>
+
+                    <button
+                      type="button"
+                      className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+                    >
+                      {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Expanded Details Body */}
+                {isExpanded && (
+                  <div className="border-t border-slate-200 bg-slate-50/50 p-5 sm:p-6 space-y-5">
+                    <div>
+                      <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                        Vulnerability Summary
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        {finding.description}
+                      </p>
+                    </div>
+
+                    {/* Diff Viewer Box */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-900 text-slate-100 overflow-hidden font-mono text-xs">
+                      <div className="bg-slate-800/80 px-4 py-2 border-b border-slate-700 flex items-center justify-between text-[11px] text-slate-400">
+                        <span>{finding.filePath}</span>
+                        <span className="text-emerald-400">AI Suggested Diff</span>
+                      </div>
+                      <pre className="p-4 overflow-x-auto text-[11px] leading-relaxed">
+                        {finding.codeSnippet.split('\n').map((line, idx) => (
+                          <div
+                            key={idx}
+                            className={
+                              line.startsWith('+')
+                                ? 'text-emerald-400 font-semibold bg-emerald-950/40 -mx-4 px-4'
+                                : line.startsWith('-')
+                                ? 'text-rose-400 line-through bg-rose-950/40 -mx-4 px-4'
+                                : 'text-slate-300'
+                            }
+                          >
+                            {line}
+                          </div>
+                        ))}
+                      </pre>
+                    </div>
+
+                    {/* Recommended Action */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                      <div className="text-xs text-slate-600">
+                        <span className="font-bold text-slate-800">Recommendation:</span> {finding.quickFix}
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600">
+                        <span>1-Click Patch Ready</span>
                       </span>
                     </div>
                   </div>

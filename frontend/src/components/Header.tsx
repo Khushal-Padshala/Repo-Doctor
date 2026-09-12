@@ -1,7 +1,6 @@
-import React from 'react';
-import { GitBranch, LogIn, FolderGit2, Activity, ArrowRight } from 'lucide-react';
+﻿import React from 'react';
+import { GitBranch, LogIn, Activity, Search, Bell, Settings, HelpCircle, Plus } from 'lucide-react';
 import { ScreenType, RepositoryData, UserProfile } from '../types';
-import { RepoDoctorLogo } from './common/RepoDoctorLogo';
 import { UserMenu } from './common/UserMenu';
 
 interface HeaderProps {
@@ -13,6 +12,8 @@ interface HeaderProps {
   onLogout: () => void;
   onSwitchAccount: () => void;
   onSignIn: () => void;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -23,113 +24,121 @@ export const Header: React.FC<HeaderProps> = ({
   user,
   onLogout,
   onSwitchAccount,
-  onSignIn
+  onSignIn,
+  activeTab = 'overview',
+  onTabChange,
 }) => {
   const isEntryScreen = currentScreen === 'landing' || currentScreen === 'sign-in';
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#2C1B2F] bg-[#00030E]/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand Logo & Wordmark */}
-        <div className="flex items-center gap-6">
-          <button
-            id="header-brand-button"
-            onClick={() => {
-              if (user) {
-                onNavigate('repositories');
-              } else {
-                onNavigate('landing');
-              }
-            }}
-            className="group flex items-center gap-3 text-left focus:outline-none"
-          >
-            <RepoDoctorLogo size="sm" showPulse={false} />
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold tracking-tight text-[#F3E9EC] transition font-urbanist">
-                Repo Doctor
-              </span>
-              <span className="rounded-full bg-[#0B0E1A] px-2 py-0.5 text-[10px] font-urbanist font-bold text-[#B47A9A] border border-[#5E3A5C]">
-                v2.4
-              </span>
-            </div>
-          </button>
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/90 backdrop-blur-xl px-4 sm:px-8 py-3.5">
+      <div className="flex items-center justify-between gap-4">
+        {/* Left: Greeting & Section Tabs */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+              Good afternoon, {user?.name?.split(' ')[0] || 'Developer'}
+            </h1>
+          </div>
 
-          {/* Repository Breadcrumb if active and in dashboard/issue view */}
-          {repository && !isEntryScreen && currentScreen !== 'repositories' && (
-            <div className="hidden items-center gap-2 rounded-full border border-[#5E3A5C] bg-[#0B0E1A] px-3.5 py-1.5 text-xs text-[#F3E9EC] md:flex font-urbanist">
-              <GitBranch className="h-3.5 w-3.5 text-[#B47A9A]" />
-              <span className="font-mono text-xs text-[#F3E9EC]/80">
-                {repository.owner}/<span className="text-[#F3E9EC] font-semibold">{repository.name}</span>
-              </span>
-              <span className="text-[#5E3A5C]">/</span>
-              <span className="font-mono text-[11px] text-[#B47A9A]">
-                {repository.defaultBranch || 'main'}
-              </span>
+          {/* Subtabs like reference Origin image */}
+          {!isEntryScreen && (
+            <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60">
+              <button
+                type="button"
+                onClick={() => {
+                  if (onTabChange) onTabChange('overview');
+                  onNavigate('dashboard');
+                }}
+                className={`rounded-lg px-3 py-1 text-xs font-bold transition ${
+                  activeTab === 'overview' && currentScreen === 'dashboard'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onTabChange) onTabChange('issues');
+                  onNavigate('dashboard');
+                }}
+                className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
+                  activeTab === 'issues'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Active Issues ({repository?.issues?.filter(i => !i.isResolved).length ?? 0})
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onTabChange) onTabChange('remediations');
+                  onNavigate('dashboard');
+                }}
+                className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
+                  activeTab === 'remediations'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Remediations
+              </button>
             </div>
           )}
         </div>
 
-        {/* Right Action Controls */}
+        {/* Right: Controls, Repo Breadcrumb & User Profile */}
         <div className="flex items-center gap-3">
-          {/* Engine Active Status */}
-          <div className="hidden items-center gap-2 rounded-full border border-[#5E3A5C]/60 bg-[#0B0E1A]/80 px-3 py-1 text-[11px] font-urbanist font-bold text-[#B47A9A] lg:flex">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#B47A9A] animate-pulse" />
-            <span className="uppercase tracking-wider">HEALTH ENGINE ONLINE</span>
+          {/* Active Repo Chip if available */}
+          {repository && !isEntryScreen && currentScreen !== 'repositories' && (
+            <div className="hidden md:flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-1.5 text-xs text-slate-700">
+              <GitBranch className="h-3.5 w-3.5 text-blue-600" />
+              <span className="font-semibold text-slate-900">{repository.owner}/{repository.name}</span>
+              <span className="text-slate-300">·</span>
+              <span className="font-mono text-[11px] text-slate-500">{repository.defaultBranch || 'main'}</span>
+            </div>
+          )}
+
+          {/* Engine Status pill with noticeable animated ping & pulse blink */}
+          <div className="hidden lg:flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-300 px-3 py-1 text-[11px] font-bold text-emerald-800 shadow-xs">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+            </span>
+            <span className="animate-pulse tracking-tight">Audit Engine Online</span>
           </div>
 
-          {/* If user is logged in */}
+          {/* New Scan button */}
+          <button
+            type="button"
+            onClick={onNewScan}
+            title="Scan repository"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-50 transition cursor-pointer"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+
+          {/* User Profile */}
           {user ? (
-            <>
-              {currentScreen !== 'repositories' && !isEntryScreen && (
-                <button
-                  id="header-repositories-button"
-                  onClick={() => onNavigate('repositories')}
-                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-urbanist text-xs font-bold transition ${
-                    currentScreen === 'repositories'
-                      ? 'bg-[#2C1B2F] text-[#F3E9EC] border border-[#5E3A5C]'
-                      : 'text-[#F3E9EC]/70 hover:bg-[#0B0E1A] hover:text-[#F3E9EC] border border-transparent'
-                  }`}
-                >
-                  <FolderGit2 className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Analyze Repo</span>
-                </button>
-              )}
-
-              {repository && !isEntryScreen && currentScreen !== 'dashboard' && (
-                <button
-                  id="header-dashboard-button"
-                  onClick={() => onNavigate('dashboard')}
-                  className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-urbanist text-xs font-bold text-[#F3E9EC]/80 hover:bg-[#0B0E1A] hover:text-[#F3E9EC] transition"
-                >
-                  <Activity className="h-3.5 w-3.5 text-[#B47A9A]" />
-                  <span>Dashboard</span>
-                </button>
-              )}
-
-              {repository && !isEntryScreen && (
-                <button
-                  id="header-switch-repo-button"
-                  onClick={onNewScan}
-                  className="flex items-center gap-1.5 rounded-full border border-[#5E3A5C] bg-[#0B0E1A] px-4 py-1.5 font-urbanist text-xs font-bold text-[#F3E9EC] transition hover:border-[#B47A9A] hover:bg-[#2C1B2F]"
-                >
-                  <span>Analyze New Repo</span>
-                </button>
-              )}
-
-              <UserMenu
-                user={user}
-                onLogout={onLogout}
-                onSwitchAccount={onSwitchAccount}
-              />
-            </>
+            <UserMenu
+              user={user}
+              onLogout={onLogout}
+              onSwitchAccount={onSwitchAccount}
+            />
           ) : (
             <button
               id="header-sign-in-btn"
               type="button"
               onClick={onSignIn}
-              className="inline-flex items-center gap-2 rounded-full border border-[#5E3A5C] bg-[#0B0E1A] px-4 py-1.5 font-urbanist text-xs font-bold text-[#F3E9EC] hover:bg-[#2C1B2F] hover:border-[#B47A9A] transition shadow-sm"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-900/15 hover:shadow-lg transition cursor-pointer border border-white/20"
+              style={{
+                background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
+              }}
             >
-              <LogIn className="h-3.5 w-3.5 text-[#B47A9A]" />
+              <LogIn className="h-3.5 w-3.5 text-cyan-200" />
               <span>Sign In</span>
             </button>
           )}

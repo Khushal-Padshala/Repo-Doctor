@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Github, Loader2 } from 'lucide-react';
 
 interface GitHubButtonProps {
@@ -26,18 +26,18 @@ export const GitHubButton: React.FC<GitHubButtonProps> = ({
       type="button"
       onClick={onClick}
       disabled={disabled || isLoading}
-      className={`group relative flex w-full items-center justify-center gap-3 rounded-full bg-[#F3E9EC] px-5 py-3.5 font-urbanist text-xs font-bold uppercase tracking-wider text-[#00030E] transition-all duration-200 hover:bg-[#B47A9A] hover:text-[#00030E] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 shadow-lg ${className}`}
+      className={`group relative flex w-full items-center justify-center gap-3 rounded-xl bg-slate-900 px-5 py-3 text-xs font-semibold text-white transition-all duration-200 hover:bg-slate-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 shadow-md ${className}`}
     >
       {isLoading ? (
         <>
-          <Loader2 className="h-4 w-4 animate-spin text-[#00030E]" />
+          <Loader2 className="h-4 w-4 animate-spin text-white" />
           <span>{loadingText}</span>
         </>
       ) : (
         <>
-          <Github className="h-4 w-4 text-[#00030E] transition-transform duration-200 group-hover:scale-105" />
+          <Github className="h-4 w-4 text-white transition-transform duration-200 group-hover:scale-105" />
           <span>{label}</span>
-          <span className="ml-1 rounded-full bg-[#2C1B2F] border border-[#5E3A5C] px-2 py-0.5 text-[9px] font-urbanist font-bold text-[#B47A9A]">
+          <span className="ml-1 rounded-md bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white">
             Recommended
           </span>
         </>

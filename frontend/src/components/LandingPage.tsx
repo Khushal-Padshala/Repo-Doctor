@@ -1,13 +1,8 @@
-import React from 'react';
+﻿import React from 'react';
 import { AnimatedBackground } from './landing/AnimatedBackground';
 import { LandingHero } from './landing/LandingHero';
 import { AnalysisCategoriesSection } from './landing/AnalysisCategoriesSection';
 import { HealthScorePreviewSection } from './landing/HealthScorePreviewSection';
-import { FindingsPreviewSection } from './landing/FindingsPreviewSection';
-import { QuickFixPreviewSection } from './landing/QuickFixPreviewSection';
-import { ImprovementComparisonSection } from './landing/ImprovementComparisonSection';
-import { ScanCoveragePreviewSection } from './landing/ScanCoveragePreviewSection';
-import { FinalCtaSection } from './landing/FinalCtaSection';
 
 interface LandingPageProps {
   onContinueWithGitHub: () => void;
@@ -22,7 +17,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onNavigateToAnalyze,
   isGitHubLoading = false
 }) => {
-  // If dedicated navigate to analyze is passed, use it, else fallback to continue with github
   const handleAnalyzeClick = () => {
     if (onNavigateToAnalyze) {
       onNavigateToAnalyze();
@@ -39,52 +33,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   };
 
   return (
-    <div className="relative min-h-screen bg-[#00030E] text-[#F3E9EC] font-urbanist selection:bg-[#B47A9A] selection:text-[#00030E]">
+    <div className="relative min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-500/20 selection:text-slate-900">
       {/* Subtle procedural background grid & ambient lighting */}
       <AnimatedBackground />
 
       <main className="relative z-10">
-        {/* HERO SECTION */}
+        {/* 1. HERO SECTION */}
         <LandingHero
           onAnalyzeClick={handleAnalyzeClick}
           onSeeHowItWorksClick={handleSeeHowItWorksClick}
           isAnalyzing={isGitHubLoading}
         />
 
-        {/* SECTION A — Repository Analysis */}
+        {/* 2. CATEGORY ANALYSIS SECTION (6 Boxes) */}
         <AnalysisCategoriesSection onAnalyzeClick={handleAnalyzeClick} />
 
-        {/* SECTION B — Health Score */}
+        {/* 3. REPOSITORY HEALTH SCORE SECTION */}
         <HealthScorePreviewSection />
-
-        {/* SECTION C — Findings */}
-        <FindingsPreviewSection />
-
-        {/* SECTION D — AI-Powered Fixes */}
-        <QuickFixPreviewSection />
-
-        {/* SECTION E — Repository Improvement (Before -> After) */}
-        <ImprovementComparisonSection />
-
-        {/* SECTION F — Scan Coverage */}
-        <ScanCoveragePreviewSection />
-
-        {/* SECTION G — Final CTA */}
-        <FinalCtaSection
-          onAnalyzeClick={handleAnalyzeClick}
-          isAnalyzing={isGitHubLoading}
-        />
       </main>
 
-      {/* Subtle Landing Page Footer */}
-      <footer className="relative z-10 border-t border-[#5E3A5C]/60 bg-[#0B0E1A] px-4 sm:px-6 lg:px-12 py-10">
-        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 font-urbanist text-xs text-[#B47A9A]/70">
+      {/* Clean Modern Footer */}
+      <footer className="relative z-10 border-t border-slate-200 bg-white px-4 sm:px-6 lg:px-12 py-10">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-[#F3E9EC]">Repo Doctor</span>
+            <span className="font-bold text-slate-900">Repo Doctor</span>
             <span>·</span>
-            <span>AI-powered repository health analyzer</span>
+            <span>AI-Powered Repository Health Diagnostics & Automated Remediation</span>
           </div>
-          <div className="flex items-center gap-6 text-[#B47A9A]/80">
+          <div className="flex items-center gap-6 font-medium text-slate-600">
             <span>Security</span>
             <span>Code Quality</span>
             <span>Git Hygiene</span>

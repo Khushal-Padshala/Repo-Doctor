@@ -11,6 +11,7 @@ import {
   calculateGrade
 } from './data/mockData';
 import { createRepositoryFromInput, fetchRealRepositoryAnalysis } from './services/repositoryService';
+import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
 import { SignInPage } from './components/SignInPage';
@@ -479,145 +480,163 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#00030E] font-urbanist text-[#F3E9EC] selection:bg-[#B47A9A]/30 selection:text-[#F3E9EC]">
-      {/* Top Application Header */}
-      <Header
-        currentScreen={currentScreen}
-        onNavigate={navigate}
-        repository={repository}
-        onNewScan={() => {
-          if (user) {
-            navigate('repositories');
-          } else {
-            navigate('landing');
-          }
-        }}
-        user={user}
-        onLogout={handleLogout}
-        onSwitchAccount={handleSwitchAccount}
-        onSignIn={() => navigate('sign-in')}
-      />
+    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900 antialiased selection:bg-blue-500/20 selection:text-slate-900">
+      {/* Sidebar for authenticated / app views */}
+      {currentScreen !== 'landing' && currentScreen !== 'sign-in' && (
+        <Sidebar
+          currentScreen={currentScreen}
+          onNavigate={navigate}
+          onNewScan={() => {
+            if (user) {
+              navigate('repositories');
+            } else {
+              navigate('landing');
+            }
+          }}
+        />
+      )}
 
-      {/* Screen Routing */}
-      <main>
-        {/* 1. Landing Page */}
-        {currentScreen === 'landing' && (
-          <LandingPage
-            onContinueWithGitHub={handleContinueWithGitHub}
-            onContinueWithGoogle={handleContinueWithGoogle}
-            onNavigateToSignIn={() => navigate('sign-in')}
-            isGitHubLoading={isGitHubAuthenticating}
-          />
-        )}
+      {/* Main Container */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        {/* Top Application Header */}
+        <Header
+          currentScreen={currentScreen}
+          onNavigate={navigate}
+          repository={repository}
+          onNewScan={() => {
+            if (user) {
+              navigate('repositories');
+            } else {
+              navigate('landing');
+            }
+          }}
+          user={user}
+          onLogout={handleLogout}
+          onSwitchAccount={handleSwitchAccount}
+          onSignIn={() => navigate('sign-in')}
+        />
 
-        {/* 2. Sign In Page */}
-        {currentScreen === 'sign-in' && (
-          <SignInPage
-            onLoginSuccess={(provider) => {
-              if (provider === 'google') {
-                handleContinueWithGoogle();
-              } else {
-                const simulatedUser: UserProfile = {
-                  id: 'user-gh-1',
-                  name: 'Developer',
-                  username: '@developer',
-                  email: 'developer@acme.corp',
-                  avatarUrl: '',
-                  provider: 'github',
-                  organization: 'acme-corp'
-                };
-                setUser(simulatedUser);
-                navigate('repositories');
-              }
-            }}
-            onBackToLanding={() => navigate('landing')}
-          />
-        )}
-
-        {/* 3. Repository Selection Page */}
-        {currentScreen === 'repositories' && (
-          <RepositorySelectionPage
-            user={user}
-            onCustomRepoSubmit={handleCustomRepoSubmit}
-            onAnalyzeRepository={handleCustomRepoSubmit}
-            onSwitchAccount={handleSwitchAccount}
-            isAnalyzing={isScanning}
-          />
-        )}
-
-        {/* 4. Existing Repo Doctor Dashboard */}
-        {currentScreen === 'dashboard' && (
-          repository ? (
-            <Dashboard
-              repository={repository}
-              onViewFix={handleViewFix}
-              onReScan={handleReScan}
-              onApplyQuickFix={handleApplyQuickFix}
-              onApplyAllQuickFixes={handleApplyAllQuickFixes}
-              recentComparison={recentComparison}
-              onDismissComparison={() => setRecentComparison(null)}
+        {/* Screen Routing */}
+        <main className="flex-1">
+          {/* 1. Landing Page */}
+          {currentScreen === 'landing' && (
+            <LandingPage
+              onContinueWithGitHub={handleContinueWithGitHub}
+              onContinueWithGoogle={handleContinueWithGoogle}
+              onNavigateToSignIn={() => navigate('sign-in')}
+              isGitHubLoading={isGitHubAuthenticating}
             />
-          ) : (
-            // Fallback if directly accessed without analyzing a repo
-            <div className="flex min-h-[60vh] flex-col items-center justify-center p-8 text-center font-urbanist">
-              <p className="text-[#B47A9A]/80 mb-4 text-sm font-medium">No repository analyzed yet.</p>
-              <button
-                onClick={() => navigate(user ? 'repositories' : 'landing')}
-                className="rounded-full bg-[#F3E9EC] px-6 py-2.5 font-urbanist text-xs font-bold uppercase tracking-wider text-[#00030E] hover:bg-[#B47A9A] transition shadow-lg"
-              >
-                Analyze a Repository
-              </button>
-            </div>
-          )
-        )}
+          )}
 
-        {/* 5. Issue Details Screen (Existing) */}
-        {currentScreen === 'issue-details' && selectedIssue && (
-          <IssueDetails
-            issue={selectedIssue}
-            onApplyFix={handleApplyFix}
-            onBack={() => navigate('dashboard')}
-          />
-        )}
+          {/* 2. Sign In Page */}
+          {currentScreen === 'sign-in' && (
+            <SignInPage
+              onLoginSuccess={(provider) => {
+                if (provider === 'google') {
+                  handleContinueWithGoogle();
+                } else {
+                  const simulatedUser: UserProfile = {
+                    id: 'user-gh-1',
+                    name: 'Developer',
+                    username: '@developer',
+                    email: 'developer@acme.corp',
+                    avatarUrl: '',
+                    provider: 'github',
+                    organization: 'acme-corp'
+                  };
+                  setUser(simulatedUser);
+                  navigate('repositories');
+                }
+              }}
+              onBackToLanding={() => navigate('landing')}
+            />
+          )}
 
-        {/* 6. Treatment Screen (Existing) */}
-        {currentScreen === 'treatment' && selectedIssue && (
-          <TreatmentPage
-            issue={selectedIssue}
-            onCreatePullRequest={handleCreatePullRequest}
-            onBack={() => navigate('issue-details')}
-            isCreatingPR={isCreatingPR}
-          />
-        )}
+          {/* 3. Repository Selection Page */}
+          {currentScreen === 'repositories' && (
+            <RepositorySelectionPage
+              user={user}
+              onCustomRepoSubmit={handleCustomRepoSubmit}
+              onAnalyzeRepository={handleCustomRepoSubmit}
+              onSwitchAccount={handleSwitchAccount}
+              isAnalyzing={isScanning}
+            />
+          )}
 
-        {/* 7. Success State Screen (Existing) */}
-        {currentScreen === 'success' && (
-          <SuccessState
-            pr={activePR || {
-              prNumber: selectedIssue?.prNumber || 101,
-              title: selectedIssue?.prTitle || 'fix: repository health remediation patch',
-              branchName: selectedIssue?.targetBranch || 'repo-doctor/patch',
-              baseBranch: repository?.defaultBranch || 'main',
-              author: 'repo-doctor[bot]',
-              createdAt: 'Just now',
-              scoreBefore: repository?.scores?.overall ?? 70,
-              gradeBefore: repository?.scores?.letterGrade ?? 'B',
-              scoreAfter: Math.min(100, (repository?.scores?.overall ?? 70) + (selectedIssue?.scoreImpact?.overall ?? 12)),
-              gradeAfter: 'A',
-              issue: selectedIssue || ({} as any),
-              status: 'open',
-            }}
-            onViewPullRequest={() => setIsPRModalOpen(true)}
-            onBackToDashboard={() => {
-              setIsPRModalOpen(false);
-              navigate('dashboard');
-            }}
-            onDiagnoseNext={handleDiagnoseNext}
-          />
-        )}
-      </main>
+          {/* 4. Repo Doctor Dashboard */}
+          {currentScreen === 'dashboard' && (
+            repository ? (
+              <Dashboard
+                repository={repository}
+                onViewFix={handleViewFix}
+                onReScan={handleReScan}
+                onApplyQuickFix={handleApplyQuickFix}
+                onApplyAllQuickFixes={handleApplyAllQuickFixes}
+                recentComparison={recentComparison}
+                onDismissComparison={() => setRecentComparison(null)}
+              />
+            ) : (
+              // Fallback if directly accessed without analyzing a repo
+              <div className="flex min-h-[60vh] flex-col items-center justify-center p-8 text-center font-sans">
+                <p className="text-slate-500 mb-4 text-sm font-medium">No repository analyzed yet.</p>
+                <button
+                  onClick={() => navigate(user ? 'repositories' : 'landing')}
+                  className="rounded-xl bg-slate-900 px-6 py-2.5 font-sans text-xs font-semibold text-white hover:bg-slate-800 transition shadow-md"
+                >
+                  Analyze a Repository
+                </button>
+              </div>
+            )
+          )}
 
-      {/* Background Analysis Scanner Modal (Existing) */}
+          {/* 5. Issue Details Screen */}
+          {currentScreen === 'issue-details' && selectedIssue && (
+            <IssueDetails
+              issue={selectedIssue}
+              onApplyFix={handleApplyFix}
+              onBack={() => navigate('dashboard')}
+            />
+          )}
+
+          {/* 6. Treatment Screen */}
+          {currentScreen === 'treatment' && selectedIssue && (
+            <TreatmentPage
+              issue={selectedIssue}
+              onCreatePullRequest={handleCreatePullRequest}
+              onBack={() => navigate('issue-details')}
+              isCreatingPR={isCreatingPR}
+            />
+          )}
+
+          {/* 7. Success State Screen */}
+          {currentScreen === 'success' && (
+            <SuccessState
+              pr={activePR || {
+                prNumber: selectedIssue?.prNumber || 101,
+                title: selectedIssue?.prTitle || 'fix: repository health remediation patch',
+                branchName: selectedIssue?.targetBranch || 'repo-doctor/patch',
+                baseBranch: repository?.defaultBranch || 'main',
+                author: 'repo-doctor[bot]',
+                createdAt: 'Just now',
+                scoreBefore: repository?.scores?.overall ?? 70,
+                gradeBefore: repository?.scores?.letterGrade ?? 'B',
+                scoreAfter: Math.min(100, (repository?.scores?.overall ?? 70) + (selectedIssue?.scoreImpact?.overall ?? 12)),
+                gradeAfter: 'A',
+                issue: selectedIssue || ({} as any),
+                status: 'open',
+              }}
+              onViewPullRequest={() => setIsPRModalOpen(true)}
+              onBackToDashboard={() => {
+                setIsPRModalOpen(false);
+                navigate('dashboard');
+              }}
+              onDiagnoseNext={handleDiagnoseNext}
+            />
+          )}
+        </main>
+      </div>
+
+      {/* Background Analysis Scanner Modal */}
       {isScanning && (
         <CheckupScanner
           repoName={pendingRepoUrl || 'username/repository'}
@@ -625,7 +644,7 @@ export default function App() {
         />
       )}
 
-      {/* Pull Request GitHub Drawer Modal (Existing) */}
+      {/* Pull Request GitHub Drawer Modal */}
       <PullRequestModal
         pr={activePR}
         isOpen={isPRModalOpen}

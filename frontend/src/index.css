@@ -1,48 +1,47 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 @theme {
-  --color-brand-void: #00030E;
-  --color-brand-dark: #0B0E1A;
-  --color-brand-surface: #2C1B2F;
-  --color-brand-mauve: #5E3A5C;
-  --color-brand-pink: #B47A9A;
-  --color-brand-light: #F3E9EC;
-  --color-brand-critical: #8A334E;
+  --color-canvas: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F1F5F9;
+  --color-border-subtle: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --color-text-main: #0F172A;
+  --color-text-muted: #64748B;
+  --color-text-subtle: #94A3B8;
+  --color-accent-blue: #2563EB;
+  --color-accent-emerald: #10B981;
+  --color-accent-amber: #F59E0B;
+  --color-accent-rose: #F43F5E;
+  --color-navy-card: #0F172A;
 }
 
 @layer base {
   :root {
-    --font-urbanist: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-sans: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
-    --bg-void: #00030E;
-    --bg-dark: #0B0E1A;
-    --bg-surface: #2C1B2F;
-    --border-mauve: #5E3A5C;
-    --accent-pink: #B47A9A;
-    --text-light: #F3E9EC;
+    --bg-canvas: #F8FAFC;
+    --bg-surface: #FFFFFF;
+    --border-color: #E2E8F0;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
   }
 
   body {
-    font-family: var(--font-urbanist);
-    background-color: #00030E;
-    color: #F3E9EC;
+    font-family: var(--font-sans);
+    background-color: #F8FAFC;
+    color: #0F172A;
     overflow-x: hidden;
   }
 
   ::selection {
-    background-color: rgba(180, 122, 154, 0.35);
-    color: #F3E9EC;
+    background-color: rgba(37, 99, 235, 0.15);
+    color: #0F172A;
   }
 }
 
-.font-urbanist {
-  font-family: var(--font-urbanist);
-}
-
 .font-sans {
-  font-family: var(--font-urbanist);
+  font-family: var(--font-sans);
 }
 
 .font-mono {
@@ -57,15 +56,25 @@
   background-size: 48px 48px;
 }
 
-/* Abstract Developer Orbit Keyframes */
+/* Abstract Developer Orbit Keyframes with Self-Stabilizing Counter-Rotation */
 @keyframes orbit-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
+@keyframes orbit-counter-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
 @keyframes orbit-reverse {
   0% { transform: rotate(360deg); }
   100% { transform: rotate(0deg); }
+}
+
+@keyframes orbit-counter-reverse {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @keyframes pulse-radar {
@@ -82,8 +91,16 @@
   animation: orbit-spin 36s linear infinite;
 }
 
+.animate-orbit-counter-spin {
+  animation: orbit-counter-spin 36s linear infinite;
+}
+
 .animate-orbit-reverse {
   animation: orbit-reverse 28s linear infinite;
+}
+
+.animate-orbit-counter-reverse {
+  animation: orbit-counter-reverse 28s linear infinite;
 }
 
 .animate-pulse-radar {
@@ -93,4 +110,3 @@
 .animate-float-gentle {
   animation: float-gentle 6s ease-in-out infinite;
 }
-

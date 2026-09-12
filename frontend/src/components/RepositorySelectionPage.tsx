@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   ArrowRight,
   AlertCircle,
@@ -8,7 +8,8 @@ import {
   GitBranch,
   Shield,
   Layers,
-  Sparkles
+  Sparkles,
+  Search
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import { parseGitHubUrl, ParsedRepoInfo } from '../services/repositoryService';
@@ -58,23 +59,26 @@ export const RepositorySelectionPage: React.FC<RepositorySelectionPageProps> = (
     }, 600);
   };
 
-  return (
-    <div className="relative min-h-[calc(100vh-4rem)] bg-[#00030E] px-4 py-16 sm:px-6 lg:px-8 text-[#F3E9EC] flex flex-col justify-between selection:bg-[#B47A9A] selection:text-[#00030E]">
-      {/* Background subtle grid and lighting */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(180,122,154,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(180,122,154,0.04)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-      <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-[650px] rounded-full bg-[#5E3A5C]/20 blur-[140px]" />
+  const sampleRepos = [
+    'https://github.com/Khushal-Padshala/Repo-Doctor',
+    'https://github.com/facebook/react',
+    'https://github.com/vercel/next.js',
+    'https://github.com/tailwindlabs/tailwindcss'
+  ];
 
-      <div className="relative mx-auto w-full max-w-3xl">
+  return (
+    <div className="min-h-[calc(100vh-5rem)] bg-slate-50 px-4 py-12 sm:px-6 lg:px-8 text-slate-900 flex flex-col justify-center">
+      <div className="mx-auto w-full max-w-2xl space-y-8">
+        
         {/* Top Header Bar */}
-        <div className="flex items-center justify-between gap-4 border-b border-[#5E3A5C]/40 pb-5 mb-10">
+        <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-5">
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-[#B47A9A] animate-pulse" />
-            <span className="font-urbanist text-xs font-bold uppercase tracking-widest text-[#B47A9A]">
-              REPOSITORY INTELLIGENCE
+            <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-600">
+              REPOSITORY AUDIT INTELLIGENCE
             </span>
           </div>
 
-          {/* Secondary Actions */}
           <div className="flex items-center gap-3">
             {!isGitHubConnected ? (
               <button
@@ -82,9 +86,9 @@ export const RepositorySelectionPage: React.FC<RepositorySelectionPageProps> = (
                 type="button"
                 onClick={handleConnectGitHub}
                 disabled={isGitHubConnecting}
-                className="inline-flex items-center gap-2 rounded-full border border-[#5E3A5C] bg-[#0B0E1A] px-4 py-2 font-urbanist text-xs font-bold text-[#F3E9EC] transition hover:border-[#B47A9A] hover:bg-[#2C1B2F] hover:text-[#F3E9EC] disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 hover:border-slate-300 disabled:opacity-50 shadow-xs cursor-pointer"
               >
-                <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
                   <path
                     fillRule="evenodd"
                     clipRule="evenodd"
@@ -94,197 +98,133 @@ export const RepositorySelectionPage: React.FC<RepositorySelectionPageProps> = (
                 <span>{isGitHubConnecting ? 'Connecting...' : 'Connect GitHub'}</span>
               </button>
             ) : (
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#5E3A5C] bg-[#2C1B2F] px-3.5 py-1.5 font-urbanist text-xs font-bold text-[#B47A9A]">
-                <CheckCircle2 className="h-3.5 w-3.5 text-[#B47A9A]" />
+              <div className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-bold text-emerald-700">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                 <span>GitHub Connected</span>
               </div>
             )}
-
-            <button
-              id="switch-account-button"
-              type="button"
-              onClick={onSwitchAccount}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#5E3A5C] bg-[#0B0E1A] px-3.5 py-2 font-urbanist text-xs font-semibold text-[#B47A9A] transition hover:border-[#B47A9A] hover:bg-[#2C1B2F] hover:text-[#F3E9EC]"
-              title="Switch user account"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Switch account</span>
-            </button>
           </div>
         </div>
 
         {/* Main Central Card */}
-        <div className="relative rounded-2xl sm:rounded-3xl border border-[#5E3A5C] bg-[#0B0E1A] p-8 sm:p-12 shadow-2xl backdrop-blur-md">
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F3E9EC] font-urbanist">
-                Analyze any GitHub repository
-              </h2>
-              <p className="mt-3 text-sm text-[#F3E9EC]/70 leading-relaxed max-w-xl font-urbanist">
-                Paste a GitHub repository URL and let Repo Doctor inspect its structure, security,
-                code quality, Git hygiene, testing, documentation and CI/CD configuration.
-              </p>
-            </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 sm:p-10 shadow-sm space-y-8">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              Analyze any GitHub repository
+            </h2>
+            <p className="mt-2 text-xs text-slate-600 leading-relaxed">
+              Paste a public or private GitHub repository URL to inspect security, code smells, git hygiene, and CI/CD pipelines.
+            </p>
+          </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2.5">
-                <label
-                  htmlFor="repository-url-input"
-                  className="block font-urbanist text-xs font-bold uppercase tracking-widest text-[#B47A9A]"
-                >
-                  GITHUB REPOSITORY URL
-                </label>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label
+                htmlFor="repository-url-input"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-700"
+              >
+                GITHUB REPOSITORY URL
+              </label>
 
-                <div className="relative flex items-center">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-[#B47A9A]">
-                    <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                      />
-                    </svg>
-                  </div>
-
-                  <input
-                    id="repository-url-input"
-                    type="text"
-                    value={repoUrl}
-                    onChange={(e) => {
-                      setRepoUrl(e.target.value);
-                      if (!hasInteracted) setHasInteracted(true);
-                    }}
-                    onBlur={() => setHasInteracted(true)}
-                    placeholder="https://github.com/user/repository"
-                    className={`w-full rounded-2xl border bg-[#00030E] py-4 pl-12 pr-12 font-mono text-sm text-[#F3E9EC] placeholder-[#B47A9A]/40 transition focus:outline-none ${
-                      isInvalid && hasInteracted
-                        ? 'border-[#8A334E] focus:border-[#8A334E] focus:ring-1 focus:ring-[#8A334E]/20'
-                        : isValid
-                        ? 'border-[#B47A9A] focus:border-[#B47A9A] focus:ring-1 focus:ring-[#B47A9A]/30'
-                        : 'border-[#5E3A5C] focus:border-[#B47A9A]'
-                    }`}
-                    autoComplete="off"
-                    autoFocus
-                  />
-
-                  {repoUrl && (
-                    <button
-                      type="button"
-                      onClick={() => setRepoUrl('')}
-                      className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#B47A9A] hover:text-[#F3E9EC]"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
+              <div className="relative flex items-center">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-600">
+                  <Search className="h-4 w-4 text-slate-600" />
                 </div>
 
-                {/* Status / Validation Message */}
-                {isInvalid && hasInteracted ? (
-                  <p className="flex items-center gap-1.5 font-urbanist text-xs text-[#8A334E] font-semibold">
-                    <AlertCircle className="h-3.5 w-3.5 text-[#8A334E]" />
-                    <span>Enter a valid GitHub repository URL.</span>
-                  </p>
-                ) : (
-                  <p className="font-urbanist text-xs text-[#F3E9EC]/70">
-                    Enter a public GitHub repository URL to begin inspection.
-                  </p>
+                <input
+                  id="repository-url-input"
+                  type="text"
+                  value={repoUrl}
+                  onChange={(e) => {
+                    setRepoUrl(e.target.value);
+                    if (!hasInteracted) setHasInteracted(true);
+                  }}
+                  onBlur={() => setHasInteracted(true)}
+                  placeholder="https://github.com/owner/repository"
+                  className={`w-full rounded-xl border bg-slate-50 py-3.5 pl-11 pr-10 font-mono text-xs text-slate-900 placeholder-slate-400 transition focus:outline-none focus:bg-white ${
+                    isInvalid && hasInteracted
+                      ? 'border-rose-300 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20'
+                      : isValid
+                      ? 'border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20'
+                      : 'border-slate-200 focus:border-slate-400'
+                  }`}
+                  autoComplete="off"
+                  autoFocus
+                />
+
+                {repoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setRepoUrl('')}
+                    className="absolute right-3 rounded-md p-1 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 )}
               </div>
 
-              {/* Extracted Preview Card (Only shows when a valid URL is entered) */}
-              {isValid && (
-                <div
-                  id="repository-preview-card"
-                  className="rounded-2xl border border-[#5E3A5C] bg-[#2C1B2F]/60 p-5 transition animate-in fade-in duration-200"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-start gap-3.5">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00030E] border border-[#5E3A5C] text-[#B47A9A] shrink-0">
-                        <GitBranch className="h-5 w-5" />
-                      </div>
-
-                      <div>
-                        <div className="font-urbanist text-[11px] font-bold uppercase tracking-widest text-[#B47A9A]">
-                          REPOSITORY
-                        </div>
-                        <div className="font-mono text-base font-semibold text-[#F3E9EC]">
-                          {parsedInfo.fullName}
-                        </div>
-                        <div className="font-urbanist text-xs text-[#F3E9EC]/70 flex items-center gap-2 mt-0.5 font-medium">
-                          <span>GitHub repository</span>
-                          <span>•</span>
-                          <span className="text-[#B47A9A] font-bold">public</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      id="preview-analyze-btn"
-                      type="button"
-                      onClick={handleAnalyze}
-                      disabled={isAnalyzing}
-                      className="inline-flex items-center justify-center gap-2 rounded-full bg-[#F3E9EC] px-6 py-2.5 font-urbanist text-xs font-bold uppercase tracking-wider text-[#00030E] hover:bg-[#B47A9A] transition disabled:opacity-50"
-                    >
-                      <span>Analyze Repository</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
+              {isInvalid && hasInteracted ? (
+                <p className="flex items-center gap-1.5 text-xs text-rose-600 font-medium">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  Please enter a valid GitHub repository URL (e.g. https://github.com/owner/repo)
+                </p>
+              ) : (
+                <p className="text-[11px] text-slate-600">
+                  Enter any public GitHub repo URL to diagnose health scores and automated cures.
+                </p>
               )}
+            </div>
 
-            </form>
-
-            {/* Public Repositories Supported & Format hints */}
-            <div className="pt-6 border-t border-[#5E3A5C]/60 text-center space-y-2 font-urbanist">
-              <p className="text-xs text-[#F3E9EC]/70 font-medium">
-                Public GitHub repositories supported
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-mono text-[#B47A9A]/80">
-                <span>https://github.com/user/repo</span>
-                <span>•</span>
-                <span>github.com/user/repo</span>
-                <span>•</span>
-                <span>user/repo</span>
+            {/* Quick Sample Chips */}
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Quick Test Repositories:</span>
+              <div className="flex flex-wrap gap-2">
+                {sampleRepos.map((sample) => {
+                  const name = sample.replace('https://github.com/', '');
+                  return (
+                    <button
+                      key={sample}
+                      type="button"
+                      onClick={() => {
+                        setRepoUrl(sample);
+                        setHasInteracted(true);
+                      }}
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition cursor-pointer"
+                    >
+                      {name}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </div>
+
+            {/* Analyze Button */}
+            <button
+              id="analyze-repo-submit-btn"
+              type="submit"
+              disabled={!isValid || isAnalyzing}
+              className={`w-full flex items-center justify-center gap-2 rounded-xl py-3.5 px-4 text-xs font-bold uppercase tracking-wider transition duration-150 shadow-sm ${
+                isValid && !isAnalyzing
+                  ? 'bg-slate-900 text-white hover:bg-slate-800 cursor-pointer'
+                  : 'bg-slate-100 text-slate-600 cursor-not-allowed border border-slate-200'
+              }`}
+            >
+              {isAnalyzing ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-slate-900" />
+                  <span>Diagnosing Repository Health...</span>
+                </>
+              ) : (
+                <>
+                  <span>Analyze Repository</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </form>
         </div>
 
-        {/* Feature Cards Below Form */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-2xl border border-[#5E3A5C] bg-[#0B0E1A]/80 p-4 text-center font-urbanist">
-            <div className="text-xs font-bold text-[#F3E9EC] uppercase tracking-wider">
-              Read-Only Inspection
-            </div>
-            <p className="mt-1 text-[11px] text-[#B47A9A]">
-              Zero code storage or clone retention
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-[#5E3A5C] bg-[#0B0E1A]/80 p-4 text-center font-urbanist">
-            <div className="text-xs font-bold text-[#F3E9EC] uppercase tracking-wider">
-              42 Health & Security Checks
-            </div>
-            <p className="mt-1 text-[11px] text-[#B47A9A]">
-              AST parsing, secrets, hygiene, and CI/CD
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-[#5E3A5C] bg-[#0B0E1A]/80 p-4 text-center font-urbanist">
-            <div className="text-xs font-bold text-[#F3E9EC] uppercase tracking-wider">
-              Automated Remediation
-            </div>
-            <p className="mt-1 text-[11px] text-[#B47A9A]">
-              1-click verified pull request generation
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="relative mx-auto mt-16 text-center text-xs font-mono text-[#B47A9A]/60">
-        Repo Doctor v2.4 • Non-invasive AST and security repository scanner
       </div>
     </div>
   );
