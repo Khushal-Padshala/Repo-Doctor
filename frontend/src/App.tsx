@@ -291,7 +291,7 @@ export default function App() {
 
       setActivePR(prDetails);
       navigate('success');
-    }, 1000);
+    }, 300);
   };
 
   // Automated Quick Fix for a single issue
@@ -591,9 +591,22 @@ export default function App() {
         )}
 
         {/* 7. Success State Screen (Existing) */}
-        {currentScreen === 'success' && activePR && (
+        {currentScreen === 'success' && (
           <SuccessState
-            pr={activePR}
+            pr={activePR || {
+              prNumber: selectedIssue?.prNumber || 101,
+              title: selectedIssue?.prTitle || 'fix: repository health remediation patch',
+              branchName: selectedIssue?.targetBranch || 'repo-doctor/patch',
+              baseBranch: repository?.defaultBranch || 'main',
+              author: 'repo-doctor[bot]',
+              createdAt: 'Just now',
+              scoreBefore: repository?.scores?.overall ?? 70,
+              gradeBefore: repository?.scores?.letterGrade ?? 'B',
+              scoreAfter: Math.min(100, (repository?.scores?.overall ?? 70) + (selectedIssue?.scoreImpact?.overall ?? 12)),
+              gradeAfter: 'A',
+              issue: selectedIssue || ({} as any),
+              status: 'open',
+            }}
             onViewPullRequest={() => setIsPRModalOpen(true)}
             onBackToDashboard={() => {
               setIsPRModalOpen(false);
